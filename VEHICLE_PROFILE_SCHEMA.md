@@ -20,11 +20,14 @@ The guide is organized as a shared viewer with one or more `vehicleProfiles`. Th
   },
   model: {
     kind: "three-webgl-procedural",
-    geometry: "high-detail procedural exterior and simplified under-hood components; no factory CAD",
+    geometry: "photo-referenced procedural exterior calibrated to published body and axle dimensions, plus approximate selectable under-hood and underbody massing; no factory CAD",
     proportions: { width: 1.71, length: 4.4, height: 1.47 }, // scaled from 2012 Dodge published exterior dimensions
     palette: { body: "#641116" }, // approximate Redline 2 Coat Pearl from user-provided report
-    cameraViews: { exterior: { position: [4.5, 2.8, -5.4], target: [0, .82, 0] } },
-    scenes: ["exterior", "underhood", "exploded"]
+    cameraViews: {
+      exterior: { position: [4.5, 2.8, -5.4], target: [0, .82, 0] },
+      underside: { position: [3.3, -2.2, -2.2], target: [0, .32, 0] }
+    },
+    scenes: ["exterior", "underhood", "underside", "exploded"]
   },
   data: {
     fuses: [], groupInfo: {}, guides: [],
@@ -59,4 +62,4 @@ The guide is organized as a shared viewer with one or more `vehicleProfiles`. Th
 
 ## Current profile coverage
 
-The embedded 2012 Dodge Grand Caravan profile uses the linked Mopar Owner Guide, a secondary StartMyCar fuse-table cross-check, the user-supplied fuse reference screenshots, and clearly labeled general training content. Its viewer uses locally bundled Three.js WebGL with OrbitControls, a high-detail procedural exterior with cut side-window openings, visible cabin rows, an exploded structure view, a wireframe overlay, approximate selectable components, and a Canvas fallback. The SE trim and Redline 2 Coat Pearl color are taken from the user-provided vehicle-report screenshot and have not been independently decoded; the VIN is not stored. The model dimensions follow the 2012 Dodge published specifications, but its surfaces and parts remain educational approximations, not factory CAD. It does not provide service-manual wiring, connector pinouts, live diagnostic codes, or vehicle telemetry. See `assets/THIRD_PARTY_NOTICES.md` for bundled-runtime licensing.
+The embedded 2012 Dodge Grand Caravan profile uses the linked Mopar Owner Guide, a secondary StartMyCar fuse-table cross-check, the user-supplied fuse reference screenshots and exterior photos, and clearly labeled general training content. Its locally bundled Three.js viewer has a photo-referenced body contour, cut side-window openings, wheel arches and axle stations calibrated to published wheelbase/overhang/track dimensions, reference-size tires, split-spoke wheels, and the published 2/2/3 seating layout, plus an exploded structure view, wireframe overlay, selectable approximate under-hood and underside parts, a label toggle, and Canvas fallback. The underbody scene shows generic FWD transaxle/half-shafts, exhaust, tank, and suspension massing informed by the published FWD, MacPherson front, and twist-beam rear layout; it is not a repair/lifting diagram or exact OEM routing. The SE trim and Redline 2 Coat Pearl color are taken from the user-provided vehicle-report screenshot and have not been independently decoded; wheel option and exact body configuration are not confirmed by VIN. The model surfaces and parts remain educational approximations, not factory CAD. It does not provide service-manual wiring, connector pinouts, live diagnostic codes, or vehicle telemetry. See `assets/THIRD_PARTY_NOTICES.md` for bundled-runtime licensing.

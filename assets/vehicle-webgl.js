@@ -38,8 +38,17 @@
 
   const mat=(color,roughness=.55,metalness=.05,extra={})=>new THREE.MeshStandardMaterial({color,roughness,metalness,...extra});
   const palette=profile.model.palette||{};
-  const paint=new THREE.MeshPhysicalMaterial({color:palette.body||'#641116',roughness:.34,metalness:.14,clearcoat:.38,clearcoatRoughness:.32}),dark=mat('#1c2325',.72,.08),glass=mat('#244252',.14,.26,{transparent:true,opacity:.86,depthWrite:false}),rubber=mat('#101416',.8,.01),alloy=mat('#858e8b',.32,.62),trim=mat('#272e30',.48,.24),bright=mat('#b2bab5',.3,.68),lamp=mat('#f7e3ae',.2,.12,{emissive:'#9b7140',emissiveIntensity:.28}),red=mat('#a8413a',.24,.12,{emissive:'#39100f',emissiveIntensity:.28}),bayBase=mat('#202a2c',.84,.12),bayEngine=mat('#53635e',.76,.12),bayBattery=mat('#a78d47',.48,.22),bayTipm=mat('#b75435',.5,.12),bayAbs=mat('#76646a',.65,.12),bayRear=mat('#4e8177',.62,.12),bayAlt=mat('#787c9b',.42,.35);
-  const root=new THREE.Group();root.scale.set(1.16,.76,1);scene.add(root);
+  const paint=new THREE.MeshPhysicalMaterial({color:palette.body||'#641116',roughness:.34,metalness:.14,clearcoat:.38,clearcoatRoughness:.32}),dark=mat('#1c2325',.72,.08),glass=mat('#244252',.14,.26,{transparent:true,opacity:.86,depthWrite:false}),sideWindowGlass=mat('#182328',.3,.08),rubber=mat('#101416',.8,.01),alloy=mat('#858e8b',.32,.62),trim=mat('#272e30',.48,.24),bright=mat('#b2bab5',.3,.68),lamp=mat('#f7e3ae',.2,.12,{emissive:'#9b7140',emissiveIntensity:.28}),red=mat('#a8413a',.24,.12,{emissive:'#39100f',emissiveIntensity:.28}),bayBase=mat('#202a2c',.84,.12),bayEngine=mat('#53635e',.76,.12),bayBattery=mat('#a78d47',.48,.22),bayTipm=mat('#b75435',.5,.12),bayAbs=mat('#76646a',.65,.12),bayRear=mat('#4e8177',.62,.12),bayAlt=mat('#787c9b',.42,.35);
+  // Calibrate wheelbase and track against published 2012 body dimensions.
+  const root=new THREE.Group();root.scale.set(1.16,.73,1);scene.add(root);
+  const modelLength=4.4,dimensionScale=modelLength/5.151;
+  const axleFront=-modelLength/2+.961*dimensionScale;
+  const axleRear=axleFront+3.078*dimensionScale;
+  const trackFront=(1.666*dimensionScale/2)/root.scale.x;
+  const trackRear=(1.647*dimensionScale/2)/root.scale.x;
+  // 17-inch reference wheel/tire proportions; the VIN-specific option is not confirmed.
+  const tireRadius=((17*25.4+2*225*.65)/2000)*dimensionScale;
+  const wheelCenterY=(tireRadius+.075)/root.scale.y;
   const bodyGroup=new THREE.Group(),bayGroup=new THREE.Group(),markerGroup=new THREE.Group(),wireframeGroup=new THREE.Group();root.add(bodyGroup,bayGroup,markerGroup);scene.add(wireframeGroup);
   const wheelGroups=[];let wireframeOn=false;
   const meshesByPart={};
@@ -54,19 +63,33 @@
   function panel(parent,points,material){const vertices=points.flat(),indices=[];for(let i=1;i<points.length-1;i++)indices.push(0,i,i+1);const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geo.setIndex(indices);geo.computeVertexNormals();const mesh=new THREE.Mesh(geo,material);mesh.material.side=THREE.DoubleSide;mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;}
   function roundedBlock(parent,w,h,d,pos,material,r=.045){const s=new THREE.Shape();s.moveTo(-w/2+r,-h/2);s.lineTo(w/2-r,-h/2);s.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);s.lineTo(w/2,h/2-r);s.quadraticCurveTo(w/2,h/2,w/2-r,h/2);s.lineTo(-w/2+r,h/2);s.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);s.lineTo(-w/2,-h/2+r);s.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);const g=new THREE.ExtrudeGeometry(s,{depth:d,bevelEnabled:true,bevelSegments:3,steps:1,bevelSize:.025,bevelThickness:.022});const m=new THREE.Mesh(g,material);m.position.set(pos[0],pos[1],pos[2]-d/2);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
 
-  // Refined exterior shell, scaled to the published 2012 body proportions; still not a factory CAD surface.
-  const sideShape=new THREE.Shape();sideShape.moveTo(-2.18,.43);sideShape.lineTo(-2.2,.76);sideShape.lineTo(-2.02,1.02);sideShape.lineTo(-1.64,1.19);sideShape.lineTo(-1.32,1.69);sideShape.quadraticCurveTo(-1.15,1.89,-.9,1.9);sideShape.lineTo(.88,1.9);sideShape.quadraticCurveTo(1.12,1.9,1.32,1.7);sideShape.lineTo(1.94,1.46);sideShape.quadraticCurveTo(2.14,1.35,2.14,1.1);sideShape.lineTo(2.12,.43);sideShape.closePath();
-  for(const z of [-1.315,1.315]){const arch=new THREE.Path();arch.absellipse(z,.42,.43,.43,0,Math.PI*2,true,0);sideShape.holes.push(arch);}
+  // Photo-matched side silhouette with open wheel arches, taller cabin, and long rear overhang.
+  const archY=wheelCenterY,archRadiusZ=tireRadius+.055,archRadiusY=(tireRadius+.032)/root.scale.y,archBottom=.27;
+  const sideShape=new THREE.Shape();
+  sideShape.moveTo(-2.2,archBottom);sideShape.lineTo(-2.2,.68);sideShape.quadraticCurveTo(-2.18,.82,-2.04,.9);sideShape.lineTo(-1.68,1.04);sideShape.lineTo(-1.39,1.67);sideShape.quadraticCurveTo(-1.22,1.91,-.91,1.92);sideShape.lineTo(.86,1.92);sideShape.quadraticCurveTo(1.1,1.92,1.32,1.72);sideShape.lineTo(1.99,1.45);sideShape.quadraticCurveTo(2.19,1.35,2.2,1.1);sideShape.lineTo(2.2,archBottom);
+  function addOpenArch(shape,centerZ){const start=-Math.asin((archY-archBottom)/archRadiusY),end=Math.PI-start,steps=32;for(let i=0;i<=steps;i++){const a=start+(end-start)*i/steps;shape.lineTo(centerZ+archRadiusZ*Math.cos(a),archY+archRadiusY*Math.sin(a));}}
+  addOpenArch(sideShape,axleRear);
+  sideShape.lineTo(axleFront+archRadiusZ*Math.cos(Math.asin((archY-archBottom)/archRadiusY)),archBottom);
+  addOpenArch(sideShape,axleFront);sideShape.closePath();
   // Real openings in the side shell align with glass panes and the interior seating.
   const sideWindowCuts=[[[ -1.39,1.51],[-1.08,1.77],[-.49,1.77],[-.49,1.49],[-.98,1.42],[-1.31,1.42]],[[-.4,1.76],[.48,1.76],[.48,1.5],[-.4,1.5]],[[.57,1.72],[1.37,1.66],[1.36,1.44],[.57,1.49]]];
   for(const pts of sideWindowCuts){const hole=new THREE.Path();hole.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)hole.lineTo(pts[i][0],pts[i][1]);hole.closePath();sideShape.holes.push(hole);}
-  const shell=new THREE.Mesh(new THREE.ExtrudeGeometry(sideShape,{depth:1.48,bevelEnabled:true,bevelSegments:4,steps:1,bevelSize:.055,bevelThickness:.05}),paint);
+  const shellGeometry=new THREE.ExtrudeGeometry(sideShape,{depth:1.48,bevelEnabled:true,bevelSegments:5,steps:1,bevelSize:.038,bevelThickness:.035});
+  const shellPositions=shellGeometry.attributes.position;
+  for(let i=0;i<shellPositions.count;i++){
+    const y=shellPositions.getY(i),depth=shellPositions.getZ(i),taper=y<.5?.94:y<1.42?1:THREE.MathUtils.lerp(1,.93,THREE.MathUtils.clamp((y-1.42)/.5,0,1));
+    shellPositions.setZ(i,.74+(depth-.74)*taper);
+  }
+  shellPositions.needsUpdate=true;shellGeometry.computeVertexNormals();
+  const shell=new THREE.Mesh(shellGeometry,paint);
   shell.rotation.y=-Math.PI/2;shell.position.x=.74;shell.castShadow=true;shell.receiveShadow=true;bodyGroup.add(shell);
   roundedBlock(bodyGroup,1.42,.14,3.96,[0,.48,.02],dark,.08);
   // Hood, roof crown, glazing, bumpers, and fascia.
   roundedBlock(bodyGroup,1.43,.16,.93,[0,1.19,-1.62],paint,.09);
   roundedBlock(bodyGroup,1.27,.13,1.78,[0,1.89,.03],paint,.16);
   roundedBlock(bodyGroup,1.55,.22,.2,[0,.56,-2.13],dark,.055);roundedBlock(bodyGroup,1.55,.22,.2,[0,.59,2.08],dark,.055);
+  // Subtle hood crown lines lead into the windshield cowl.
+  for(const side of [-1,1])line(bodyGroup,[[side*.52,1.29,-2.02],[side*.49,1.31,-1.77],[side*.43,1.32,-1.48]],new THREE.LineBasicMaterial({color:'#8c252b',transparent:true,opacity:.48}));
   // Windshield planes follow the sloped A-pillars rather than sitting as a rectangular slab.
   const frontWind=[[ -.57,1.72,-1.38],[.57,1.72,-1.38],[.53,1.28,-1.79],[-.53,1.28,-1.79]];
   panel(bodyGroup,frontWind,glass);line(bodyGroup,[...frontWind,frontWind[0]],new THREE.LineBasicMaterial({color:'#bcc8c6',transparent:true,opacity:.78}));
@@ -74,27 +97,33 @@
   panel(bodyGroup,rearWind,glass);line(bodyGroup,[...rearWind,rearWind[0]],new THREE.LineBasicMaterial({color:'#bcc8c6',transparent:true,opacity:.7}));
   // Side glazing is divided into driver, sliding-door, and rear-quarter panes with rubber surrounds.
   for(const side of [-1,1]){
-    const x=side*.815;
-    const windows=[[[x,1.51,-1.39],[x,1.77,-1.08],[x,1.77,-.49],[x,1.49,-.49],[x,1.42,-.98],[x,1.42,-1.31]],[[x,1.76,-.4],[x,1.76,.48],[x,1.5,.48],[x,1.5,-.4]],[[x,1.72,.57],[x,1.66,1.37],[x,1.44,1.36],[x,1.49,.57]]];
-    for(const pts of windows){panel(bodyGroup,pts,glass);line(bodyGroup,[...pts,pts[0]],new THREE.LineBasicMaterial({color:'#c2ccca',transparent:true,opacity:.65}));}
-    // B-pillar, mirror housing, reflective glass, and integrated signal strip.
-    box(bodyGroup,[.045,.34,.075],[side*.82,1.62,-.44],dark);
+    const xAt=(y)=>{const taper=y<.5?.94:y<1.42?1:THREE.MathUtils.lerp(1,.93,THREE.MathUtils.clamp((y-1.42)/.5,0,1));return side*(.74*taper+.05);};
+    const panes=[[[1.51,-1.39],[1.77,-1.08],[1.77,-.49],[1.49,-.49],[1.42,-.98],[1.42,-1.31]],[[1.76,-.4],[1.76,.48],[1.5,.48],[1.5,-.4]],[[1.72,.57],[1.66,1.37],[1.44,1.36],[1.49,.57]]];
+    for(const pane of panes){const pts=pane.map(([y,z])=>[xAt(y),y,z]);panel(bodyGroup,pts,sideWindowGlass);line(bodyGroup,[...pts,pts[0]],new THREE.LineBasicMaterial({color:'#829095',transparent:true,opacity:.7}));}
+    const x=side*.76;
+    // A-, B-, and C-pillars frame the three side-glass sections.
+    line(bodyGroup,[[side*.75,1.25,-1.8],[side*.75,1.52,-1.53],[side*.75,1.76,-1.16]],new THREE.LineBasicMaterial({color:'#272e30',transparent:true,opacity:.95}));
+    box(bodyGroup,[.045,.34,.075],[side*.78,1.62,-.44],dark);
+    box(bodyGroup,[.045,.31,.075],[side*.78,1.6,.525],dark);
+    box(bodyGroup,[.045,.34,.08],[side*.73,1.54,1.43],dark);
     roundedBlock(bodyGroup,.22,.15,.28,[side*.87,1.43,-1.4],dark,.055);
     panel(bodyGroup,[[side*.988,1.42,-1.51],[side*.988,1.42,-1.3],[side*.988,1.47,-1.32],[side*.988,1.47,-1.5]],glass);
     box(bodyGroup,[.018,.018,.13],[side*.89,1.39,-1.39],lamp);
     line(bodyGroup,[[side*.76,1.43,-1.48],[side*.86,1.43,-1.4]],new THREE.LineBasicMaterial({color:'#a7b8b4'}));
     // Door divisions, sliding rail and discrete handles.
     const seam=new THREE.LineBasicMaterial({color:'#263234',transparent:true,opacity:.92});
-    line(bodyGroup,[[x,.57,-.16],[x,1.47,-.16]],seam);line(bodyGroup,[[x,.57,1.00],[x,1.45,1.00]],seam);
+    line(bodyGroup,[[x,.29,-.16],[x,1.47,-.16]],seam);line(bodyGroup,[[x,.29,1.00],[x,1.45,1.00]],seam);
     line(bodyGroup,[[x,1.49,-.18],[x,1.49,1.0]],new THREE.LineBasicMaterial({color:'#bac7c2',transparent:true,opacity:.7}));
-    roundedBlock(bodyGroup,.035,.045,.19,[side*.82,1.27,-.02],alloy,.018);roundedBlock(bodyGroup,.035,.045,.19,[side*.82,1.27,.77],alloy,.018);
+    roundedBlock(bodyGroup,.035,.045,.19,[side*.79,1.27,-.02],alloy,.018);roundedBlock(bodyGroup,.035,.045,.19,[side*.79,1.27,.77],alloy,.018);
     box(bodyGroup,[.03,.13,.06],[side*.77,.96,-1.8],lamp);box(bodyGroup,[.03,.14,.07],[side*.77,.91,1.88],red);
     // Sliding-door guide rail, lower body molding, rocker trim, and subtle shoulder crease.
-    line(bodyGroup,[[side*.81,1.48,-.22],[side*.81,1.48,.98]],new THREE.LineBasicMaterial({color:'#d0d2cb',transparent:true,opacity:.6}));
-    line(bodyGroup,[[side*.81,.69,-.21],[side*.81,.69,1.0]],new THREE.LineBasicMaterial({color:'#d9c6a3',transparent:true,opacity:.34}));
-    box(bodyGroup,[.035,.13,2.2],[side*.81,.50,.35],dark);
+    line(bodyGroup,[[side*.8,1.48,-.22],[side*.8,1.48,.98]],new THREE.LineBasicMaterial({color:'#d0d2cb',transparent:true,opacity:.6}));
+    line(bodyGroup,[[side*.8,.9,-.21],[side*.8,.9,1.0]],new THREE.LineBasicMaterial({color:'#d9c6a3',transparent:true,opacity:.42}));
+    box(bodyGroup,[.035,.12,2.2],[side*.75,.28,.35],dark);
     line(bodyGroup,[[side*.56,1.98,-.83],[side*.56,1.98,.94]],new THREE.LineBasicMaterial({color:'#ced3cf',transparent:true,opacity:.6}));
   }
+  // The fuel-filler door sits on the vehicle's left rear quarter.
+  const fillerDoor=new THREE.Mesh(new THREE.TorusGeometry(.095,.008,6,32),new THREE.MeshStandardMaterial({color:'#6c171b',roughness:.5}));fillerDoor.rotation.y=Math.PI/2;fillerDoor.position.set(-.735,1.08,1.62);bodyGroup.add(fillerDoor);
   // Crosshair grille, Dodge badge, layered headlamp lenses, fog lamps, and rear lamp stacks.
   roundedBlock(bodyGroup,.72,.34,.08,[0,.96,-2.22],bright,.065);roundedBlock(bodyGroup,.62,.25,.085,[0,.96,-2.265],dark,.035);
   box(bodyGroup,[.05,.25,.1],[0,.96,-2.31],bright);box(bodyGroup,[.62,.045,.1],[0,.96,-2.315],bright);
@@ -108,6 +137,9 @@
     box(bodyGroup,[.23,.035,.09],[side*.55,1.03,2.205],lamp);
     box(bodyGroup,[.22,.035,.09],[side*.55,.89,2.205],red);
   }
+  roundedBlock(bodyGroup,1.5,.32,.12,[0,.76,-2.15],paint,.07);
+  roundedBlock(bodyGroup,.92,.13,.07,[0,.57,-2.23],dark,.035);
+  for(let i=0;i<3;i++)box(bodyGroup,[.78,.012,.035],[0,.53+i*.035,-2.27],trim);
   // Tailgate seams, handle, rear plate pocket, and wiper.
   line(bodyGroup,[[-.68,.61,2.13],[.68,.61,2.13]],new THREE.LineBasicMaterial({color:'#273033'}));
   roundedBlock(bodyGroup,.23,.05,.035,[0,1.22,2.18],bright,.02);roundedBlock(bodyGroup,.46,.19,.045,[0,.78,2.18],dark,.03);
@@ -125,27 +157,63 @@
   const steering=new THREE.Mesh(new THREE.TorusGeometry(.13,.016,10,32),trim);steering.position.set(-.35,1.04,-1.12);steering.rotation.z=-.16;cabin.add(steering);
   line(cabin,[[-.35,1.04,-1.12],[-.35,.87,-1.29]],new THREE.LineBasicMaterial({color:'#343a3b'}));
   roundedBlock(cabin,.24,.24,.39,[0,.78,-.91],dark,.05);
-  for(const z of [-.88,-.02,.85])for(const x of [-.34,.34]){
-    roundedBlock(cabin,.34,.13,.39,[x,.68,z],upholstery,.055);
-    roundedBlock(cabin,.34,.43,.16,[x,.94,z+.14],upholstery,.06);
-    roundedBlock(cabin,.22,.13,.12,[x,1.22,z+.17],seatInsert,.045);
-    roundedBlock(cabin,.25,.018,.26,[x,.75,z],seatInsert,.035);
+  // 2/2/3 seating matches the published 2012 accommodation layout.
+  const seatRows=[{z:-.88,xs:[-.34,.34]},{z:-.02,xs:[-.34,.34]},{z:.85,xs:[-.46,0,.46]}];
+  for(const row of seatRows)for(const x of row.xs){
+    roundedBlock(cabin,.34,.13,.39,[x,.68,row.z],upholstery,.055);
+    roundedBlock(cabin,.34,.43,.16,[x,.94,row.z+.14],upholstery,.06);
+    roundedBlock(cabin,.22,.13,.12,[x,1.22,row.z+.17],seatInsert,.045);
+    roundedBlock(cabin,.25,.018,.26,[x,.75,row.z],seatInsert,.035);
   }
 
-  // Real 3D tires, sidewalls, alloy hubs, and modest tread blocks.
-  for(const side of [-1,1])for(const z of [-1.315,1.315]){
-    const archTrim=new THREE.Mesh(new THREE.TorusGeometry(.43,.025,10,56),dark);archTrim.rotation.y=Math.PI/2;archTrim.position.set(side*.747,.42,z);bodyGroup.add(archTrim);
-    const wheel=new THREE.Group();wheel.position.set(side*.77,.42,z);wheel.userData.side=side;wheel.userData.axle=z<0?'front':'rear';root.add(wheel);wheelGroups.push(wheel);
-    const tire=new THREE.Mesh(new THREE.CylinderGeometry(.407,.407,.25,32,1,false),rubber);tire.rotation.z=Math.PI/2;tire.castShadow=true;tire.receiveShadow=true;wheel.add(tire);
-    const sidewall=new THREE.Mesh(new THREE.TorusGeometry(.325,.018,10,48),trim);sidewall.rotation.y=Math.PI/2;sidewall.position.x=side*.137;wheel.add(sidewall);
-    const rotor=new THREE.Mesh(new THREE.CylinderGeometry(.235,.235,.04,40),alloy);rotor.rotation.z=Math.PI/2;rotor.position.x=side*.13;wheel.add(rotor);
-    const hub=new THREE.Mesh(new THREE.CylinderGeometry(.225,.225,.29,40),alloy);hub.rotation.z=Math.PI/2;wheel.add(hub);
-    // Five sculpted spokes and a center cap make the alloy wheel read clearly at orbit distance.
-    for(let i=0;i<5;i++){const a=i*Math.PI*2/5,spoke=new THREE.Mesh(new THREE.BoxGeometry(.075,.25,.07),alloy);spoke.position.set(side*.155,Math.cos(a)*.13,Math.sin(a)*.13);spoke.rotation.x=-a;wheel.add(spoke);const lug=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.31,12),dark);lug.rotation.z=Math.PI/2;lug.position.set(side*.16,Math.cos(a)*.19,Math.sin(a)*.19);wheel.add(lug);}
-    const cap=new THREE.Mesh(new THREE.CylinderGeometry(.078,.078,.31,24),trim);cap.rotation.z=Math.PI/2;wheel.add(cap);
-    const caliper=new THREE.Mesh(new THREE.BoxGeometry(.08,.14,.12),red);caliper.position.set(side*.11,.13,.19);wheel.add(caliper);
-    for(const dx of [-.075,0,.075]){const groove=new THREE.Mesh(new THREE.TorusGeometry(.397,.006,6,40),dark);groove.rotation.y=Math.PI/2;groove.position.x=dx;wheel.add(groove);}
+  // Dimensional 17-inch tires, correctly spaced axles/tracks, and split-spoke alloy faces.
+  for(const axle of [{name:'front',z:axleFront,track:trackFront},{name:'rear',z:axleRear,track:trackRear}])for(const side of [-1,1]){
+    const archPoints=[];const start=-Math.asin((archY-archBottom)/archRadiusY),end=Math.PI-start;
+    for(let i=0;i<=40;i++){const a=start+(end-start)*i/40;archPoints.push(new THREE.Vector3(side*.742,archY+archRadiusY*Math.sin(a),axle.z+archRadiusZ*Math.cos(a)));}
+    const archCurve=new THREE.CatmullRomCurve3(archPoints);const archTrim=new THREE.Mesh(new THREE.TubeGeometry(archCurve,48,.018,6,false),dark);bodyGroup.add(archTrim);
+    const wheel=new THREE.Group();wheel.position.set(side*axle.track,wheelCenterY,axle.z);wheel.scale.y=1/root.scale.y;wheel.userData.side=side;wheel.userData.axle=axle.name;wheel.userData.z=axle.z;wheel.userData.track=axle.track;root.add(wheel);wheelGroups.push(wheel);
+    const tireWidth=225/1000*dimensionScale/root.scale.x;
+    const tire=new THREE.Mesh(new THREE.CylinderGeometry(tireRadius,tireRadius,tireWidth,48,1,false),rubber);tire.rotation.z=Math.PI/2;tire.castShadow=true;tire.receiveShadow=true;wheel.add(tire);
+    const sidewall=new THREE.Mesh(new THREE.TorusGeometry(tireRadius*.82,.014,10,56),trim);sidewall.rotation.y=Math.PI/2;sidewall.position.x=side*.5*tireWidth;wheel.add(sidewall);
+    const rotorRadius=.184,rotor=new THREE.Mesh(new THREE.CylinderGeometry(rotorRadius,rotorRadius,.035,48),alloy);rotor.rotation.z=Math.PI/2;rotor.position.x=side*.44*tireWidth;wheel.add(rotor);
+    const hub=new THREE.Mesh(new THREE.CylinderGeometry(.176,.176,.055,48),alloy);hub.rotation.z=Math.PI/2;hub.position.x=side*.50*tireWidth;wheel.add(hub);
+    // Ten split spokes echo the five paired spokes visible in the supplied photographs.
+    for(let i=0;i<10;i++){const a=i*Math.PI*2/10,spoke=new THREE.Mesh(new THREE.BoxGeometry(.035,.18,.055),alloy);spoke.position.set(side*.53*tireWidth,Math.cos(a)*.105,Math.sin(a)*.105);spoke.rotation.x=-a;wheel.add(spoke);if(i%2===0){const lug=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.07,12),dark);lug.rotation.z=Math.PI/2;lug.position.set(side*.56*tireWidth,Math.cos(a)*.145,Math.sin(a)*.145);wheel.add(lug);}}
+    const cap=new THREE.Mesh(new THREE.CylinderGeometry(.062,.062,.075,28),trim);cap.rotation.z=Math.PI/2;cap.position.x=side*.55*tireWidth;wheel.add(cap);
+    const caliper=new THREE.Mesh(new THREE.BoxGeometry(.035,.11,.09),red);caliper.position.set(side*.34*tireWidth,.06,.14);wheel.add(caliper);
+    for(const dx of [-.045,0,.045]){const groove=new THREE.Mesh(new THREE.TorusGeometry(tireRadius-.008,.005,6,48),dark);groove.rotation.y=Math.PI/2;groove.position.x=dx;wheel.add(groove);}
+    for(let i=0;i<36;i++){const a=i*Math.PI*2/36,tread=new THREE.Mesh(new THREE.BoxGeometry(tireWidth*.78,.014,.035),dark);tread.position.set(0,(tireRadius-.002)*Math.sin(a),(tireRadius-.002)*Math.cos(a));tread.rotation.x=-a;wheel.add(tread);}
   }
+
+  // Simplified underbody massing; forms are selectable but are not factory CAD or service locations.
+  const underbodyGroup=new THREE.Group();root.add(underbodyGroup);
+  const undertray=mat('#2b3031',.9,.12),underFrame=mat('#555d5e',.76,.26),exhaustMetal=mat('#8a908f',.44,.62),tankMat=mat('#33393a',.82,.08),springMat=mat('#a2aaa8',.42,.55);
+  function underPart(id){if(!meshesByPart[id]){meshesByPart[id]=new THREE.Group();meshesByPart[id].userData.componentId=id;underbodyGroup.add(meshesByPart[id]);}return meshesByPart[id];}
+  function underMat(id,material){const group=underPart(id);group.userData.materials||={};const key=material.uuid;return group.userData.materials[key]||(group.userData.materials[key]=material.clone());}
+  function underTube(parent,points,radius,material){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,36,radius,8,false),material);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;}
+  roundedBlock(underbodyGroup,.42,.045,1.5,[-.39,.29,-.02],undertray,.06);roundedBlock(underbodyGroup,.42,.045,1.5,[.39,.29,-.02],undertray,.06);
+  const tank=underPart('fuelTank');roundedBlock(tank,.94,.12,.96,[0,.38,.48],underMat('fuelTank',tankMat),.1);
+  const transaxle=underPart('transaxle');roundedBlock(transaxle,.6,.28,.62,[0,.34,axleFront+.12],underMat('transaxle',underFrame),.08);
+  for(const side of [-1,1])underTube(transaxle,[[side*.2,.31,axleFront],[side*.42,.31,axleFront-.03],[side*.66,.34,axleFront]],.035,underMat('transaxle',exhaustMetal));
+  roundedBlock(underbodyGroup,1.06,.09,.13,[0,.34,axleFront+.08],underFrame,.035);
+  const exhaust=underPart('exhaust');
+  underTube(exhaust,[[0,.30,-1.35],[.1,.27,-1.08],[.14,.26,-.7],[.11,.26,-.25],[.08,.26,.25],[.1,.26,.82],[.13,.26,1.25],[.17,.26,1.72]],.035,underMat('exhaust',exhaustMetal));
+  const catalytic=new THREE.Mesh(new THREE.CylinderGeometry(.13,.15,.28,24),underMat('exhaust',exhaustMetal));catalytic.rotation.x=Math.PI/2;catalytic.position.set(.1,.28,-.97);exhaust.add(catalytic);
+  roundedBlock(exhaust,.48,.14,.56,[-.08,.27,1.47],underMat('exhaust',exhaustMetal),.08);underTube(exhaust,[[.16,.26,1.67],[.25,.26,1.9],[.42,.27,2.12]],.035,underMat('exhaust',exhaustMetal));
+  roundedBlock(underPart('frontSuspension'),1.06,.09,.13,[0,.34,axleFront+.08],underMat('frontSuspension',underFrame),.035);
+  roundedBlock(underPart('rearSuspension'),1.22,.09,.12,[0,.30,axleRear],underMat('rearSuspension',underFrame),.04);
+  for(const side of [-1,1]){
+    const front=underPart('frontSuspension'),rear=underPart('rearSuspension');
+    underTube(rear,[[side*.58,.37,axleRear-.46],[side*.66,.29,axleRear-.22],[side*.66,.29,axleRear]],.045,underMat('rearSuspension',underFrame));
+    underTube(front,[[side*.52,.34,axleFront-.12],[side*.62,.31,axleFront],[side*.48,.30,axleFront+.24]],.038,underMat('frontSuspension',underFrame));
+    underTube(front,[[side*.46,.26,axleFront-.12],[side*.63,.7,axleFront]],.036,underMat('frontSuspension',underFrame));
+    underTube(front,[[side*.62,.31,axleFront],[side*.46,.32,axleFront+.22],[0,.32,axleFront+.29]],.023,underMat('frontSuspension',springMat));
+    const shock=new THREE.Mesh(new THREE.CylinderGeometry(.03,.035,.34,12),underMat('rearSuspension',underFrame));shock.position.set(side*.61,.43,axleRear-.08);shock.rotation.z=side*.15;rear.add(shock);
+    const coilPoints=[];for(let i=0;i<=40;i++){const t=i/40,a=t*Math.PI*8;coilPoints.push(new THREE.Vector3(side*.58+.055*Math.cos(a),.29+t*.23,axleRear-.15+.055*Math.sin(a)));}
+    rear.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(coilPoints),96,.009,6,false),underMat('rearSuspension',springMat)));
+  }
+  underTube(underPart('rearSuspension'),[[-.64,.34,axleRear-.3],[0,.34,axleRear-.22],[.64,.34,axleRear-.3]],.035,underMat('rearSuspension',underFrame));
+  underTube(underPart('rearSuspension'),[[-.54,.40,axleRear-.14],[0,.40,axleRear-.04],[.54,.40,axleRear-.14]],.021,underMat('rearSuspension',springMat));
 
   // Under-hood blocks attach to approximate profile anchors. No wires/connectors or exact routing.
   // Structural bay rails, strut towers, firewall and radiator support give the components a believable frame.
@@ -189,10 +257,10 @@
 
   const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let selected=ui.getSelected(),pathLine=null,sceneMode=ui.getSceneMode(),lastWidth=0,lastHeight=0,animationFrame=0,webglFailed=false;const hiddenComponents=new Set(),reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const views=profile.model.cameraViews||{};
-  const originals={exterior:{position:new THREE.Vector3(...(views.exterior?.position||[4.5,2.8,-5.4])),target:new THREE.Vector3(...(views.exterior?.target||[0,.82,0]))},underhood:{position:new THREE.Vector3(...(views.underhood?.position||[2,5.1,-2.55])),target:new THREE.Vector3(...(views.underhood?.target||[0,.65,-1.2]))},exploded:{position:new THREE.Vector3(5.4,3.35,-6.4),target:new THREE.Vector3(0,.88,0)}};
+  const originals={exterior:{position:new THREE.Vector3(...(views.exterior?.position||[4.5,2.8,-5.4])),target:new THREE.Vector3(...(views.exterior?.target||[0,.82,0]))},underhood:{position:new THREE.Vector3(...(views.underhood?.position||[2,5.1,-2.55])),target:new THREE.Vector3(...(views.underhood?.target||[0,.65,-1.2]))},underside:{position:new THREE.Vector3(...(views.underside?.position||[3.8,-3.3,-4.5])),target:new THREE.Vector3(...(views.underside?.target||[0,.32,0]))},exploded:{position:new THREE.Vector3(5.4,3.35,-6.4),target:new THREE.Vector3(0,.88,0)}};
   function setGhostMaterials(visible){bodyGroup.traverse(o=>{if(!o.isMesh)return;if(visible){if(!o.userData.wireOriginalMaterial)o.userData.wireOriginalMaterial=o.material;if(!o.userData.wireGhostMaterial){o.userData.wireGhostMaterial=o.material.clone();o.userData.wireGhostMaterial.transparent=true;o.userData.wireGhostMaterial.opacity=o.material===glass?.12:o.material===paint?.32:.22;o.userData.wireGhostMaterial.depthWrite=false;}o.material=o.userData.wireGhostMaterial;}else if(o.userData.wireOriginalMaterial){o.material=o.userData.wireOriginalMaterial;}});}
-  function refreshWireframe(){while(wireframeGroup.children.length){const o=wireframeGroup.children[0];wireframeGroup.remove(o);if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();}wireframeGroup.visible=wireframeOn&&sceneMode!=='underhood';setGhostMaterials(wireframeGroup.visible);if(!wireframeGroup.visible)return;const edgeMat=new THREE.LineBasicMaterial({color:'#20292b',transparent:true,opacity:.94,depthTest:true});root.updateMatrixWorld(true);for(const group of [bodyGroup,cabin])group.traverse(o=>{if(o.isMesh&&o.geometry){o.updateWorldMatrix(true,false);const edges=new THREE.EdgesGeometry(o.geometry,34);const lines=new THREE.LineSegments(edges,edgeMat);lines.matrixAutoUpdate=false;lines.matrix.copy(o.matrixWorld);lines.matrixWorldNeedsUpdate=true;lines.renderOrder=5;wireframeGroup.add(lines);}});}
-  function applyScene(name){sceneMode=name;const exploded=name==='exploded';bodyGroup.position.set(0,exploded?.24:0,0);cabin.position.set(0,exploded?-.53:0,0);bayGroup.position.set(0,exploded?-.34:0,0);bayGroup.visible=name==='underhood'||exploded;bodyGroup.visible=name!=='underhood';cabin.visible=name!=='underhood';wheelGroups.forEach(w=>{const s=w.userData.side;w.position.set(s*(exploded?1.12:.77),exploded?.17:.42,w.userData.axle==='front'?-1.315:1.315);});Object.entries(anchorMeshes).forEach(([id,g])=>{const p=anchor(id);const bay=['battery','tipm','engine','radiator','alternator','abs','rear'].includes(id);g.position.set(p.x,p.y+(exploded?(bay?-.34:.24):0),p.z)});floor.visible=true;grid.visible=true;controls.minPolarAngle=name==='underhood'?.12:.25;controls.maxPolarAngle=name==='underhood'?1.38:1.48;controls.target.copy(originals[name].target);camera.position.copy(originals[name].position);controls.update();refreshWireframe();syncZoomSlider();updatePinPositions();}
+  function refreshWireframe(){while(wireframeGroup.children.length){const o=wireframeGroup.children[0];wireframeGroup.remove(o);if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();}wireframeGroup.visible=wireframeOn&&sceneMode!=='underhood';setGhostMaterials(wireframeGroup.visible&&sceneMode!=='underside');if(!wireframeGroup.visible)return;const edgeMat=new THREE.LineBasicMaterial({color:'#20292b',transparent:true,opacity:.94,depthTest:true});root.updateMatrixWorld(true);const targets=sceneMode==='underside'?[underbodyGroup]:[bodyGroup,cabin];for(const group of targets)group.traverse(o=>{if(o.isMesh&&o.geometry){o.updateWorldMatrix(true,false);const edges=new THREE.EdgesGeometry(o.geometry,34);const lines=new THREE.LineSegments(edges,edgeMat);lines.matrixAutoUpdate=false;lines.matrix.copy(o.matrixWorld);lines.matrixWorldNeedsUpdate=true;lines.renderOrder=5;wireframeGroup.add(lines);}});}
+  function applyScene(name){sceneMode=name;const exploded=name==='exploded',underside=name==='underside',underParts=new Set(['fuelTank','transaxle','exhaust','frontSuspension','rearSuspension']);bodyGroup.position.set(0,exploded?.24:0,0);cabin.position.set(0,exploded?-.53:0,0);bayGroup.position.set(0,exploded?-.34:0,0);bayGroup.visible=name==='underhood'||exploded;bodyGroup.visible=name!=='underhood'&&!underside;cabin.visible=name!=='underhood'&&!underside;underbodyGroup.visible=underside;wheelGroups.forEach(w=>{const s=w.userData.side;w.position.set(s*(exploded?1.12:w.userData.track),exploded?.17:wheelCenterY,w.userData.z);});Object.entries(anchorMeshes).forEach(([id,g])=>{const p=anchor(id);const bay=['battery','tipm','engine','radiator','alternator','abs','rear'].includes(id);g.position.set(p.x,p.y+(exploded?(bay?-.34:.24):0),p.z);g.visible=(underside?underParts.has(id):!underParts.has(id))&&!hiddenComponents.has(id)});floor.visible=!underside;grid.visible=!underside;shadow.visible=!underside;controls.minPolarAngle=underside?1.62:name==='underhood'?.12:.25;controls.maxPolarAngle=underside?3.02:name==='underhood'?1.38:1.48;controls.target.copy(originals[name].target);camera.position.copy(originals[name].position);controls.update();refreshWireframe();syncZoomSlider();updatePinPositions();}
   function resize(){const w=wrap.clientWidth,h=wrap.clientHeight;if(!w||!h)return;if(w!==lastWidth||h!==lastHeight){lastWidth=w;lastHeight=h;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);updatePinPositions();}}
   function updatePinPositions(){const buttons=document.querySelectorAll('.component-pin');buttons.forEach(b=>{const id=Object.keys(components).find(k=>components[k].label===b.textContent);if(!id)return;const pin=anchorMeshes[id]||{position:anchor(id)},pos=pin.position.clone().project(camera);const w=wrap.clientWidth,h=wrap.clientHeight;const inFrame=!hiddenComponents.has(id)&&pos.z>-1&&pos.z<1&&Math.abs(pos.x)<1.08&&Math.abs(pos.y)<1.08;b.style.visibility=inFrame?'visible':'hidden';b.style.left=`${(pos.x*.5+.5)*w}px`;b.style.top=`${(-pos.y*.5+.5)*h}px`;b.style.transform='translate(-50%,-50%)';b.setAttribute('aria-pressed',String(id===selected));});}
   function project(id,w,h){const p=(anchorMeshes[id]?.position||anchor(id)).clone().project(camera);return{x:(p.x*.5+.5)*w,y:(-p.y*.5+.5)*h};}
