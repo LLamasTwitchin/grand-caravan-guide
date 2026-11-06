@@ -1,0 +1,63 @@
+# Vehicle profile schema, version 1
+
+The guide is organized as a shared viewer with one or more `vehicleProfiles`. The first profile is `dodge-grand-caravan-2012`. It is the default (`body[data-vehicle-profile]`) and remains the only selectable profile until another fully reviewed profile is integrated. Do not add a selector for a profile that is not present.
+
+## Required fields
+
+```js
+{
+  schemaVersion: 1,
+  id: "make-model-year",             // stable, lowercase slug
+  identity: {
+    year: 2012, make: "Dodge", model: "Grand Caravan",
+    market: null, trim: null, powertrain: null
+  },
+  coverage: {
+    ownerGuide: "exact publication name / edition",
+    userFuseImages: true, serviceManual: false,
+    trimVerified: false,
+    options: "State what is unknown; preserve if-equipped qualifiers"
+  },
+  model: {
+    kind: "three-webgl-procedural",
+    geometry: "approximate educational minivan silhouette",
+    proportions: { width: 1.52, length: 4.4, height: 1.94 }, // renderer scale hints, not measured factory dimensions
+    palette: { body: "#4f8882" },
+    cameraViews: { exterior: { position: [4.5, 2.8, -5.4], target: [0, .82, 0] } },
+    scenes: ["exterior", "underhood"]
+  },
+  data: {
+    fuses: [], groupInfo: {}, guides: [],
+    components: {}, scenarios: {}
+  },
+  provenance: {
+    manual: "direct primary-source URL",
+    screenshots: "user-supplied source description"
+  },
+  trainingDataSynthetic: true
+}
+```
+
+## Record conventions
+
+- A fuse record includes `visualIndex` (or the existing `n` field), `blockId`, and `cavity` as separate values. Do not infer one from another. Different vehicles may have separate underhood and instrument-panel number sequences. For the current source set, screenshot references #1–58 and Mopar cavity J12 are deliberately distinct.
+- Add source and confidence metadata at the record level when the data is not uniformly sourced, e.g. `{sourceId:"owner-guide", page:"109", confidence:"manual-confirmed"}` or `{sourceId:"user-image-2", confidence:"visual-transcription"}`. A user screenshot is not automatically an OEM physical-location diagram.
+- Mark optional equipment as conditional. Unknown market, trim, engine, and option fields stay `null` or “unknown” until a document tied to that configuration supports them. A VIN alone must not be used to assert equipment or eligibility.
+- Symptom guides are general owner-level observations and should state what they cannot prove, a result-dependent next step, and when to stop. Cite vehicle-specific limits to the relevant owner publication.
+- Simulator scenarios must be explicitly synthetic (`trainingDataSynthetic: true`). Every reading, failure cause, scan result, wiring path, and repair is invented for practice, never telemetry or an OEM diagnostic threshold. Do not include invented DTCs.
+- Components are approximate selectable labels/roles/positions for the model. Do not represent connector pins, wire colors, internal construction, or actual OEM routing without sourced service data and careful review.
+- A personal repair report or historic price quote is a case-study artifact, not authoritative service data. Keep it as a separately labeled source with author/date/context and verify each technical claim before turning it into a reusable profile fact.
+
+## Adding a profile
+
+1. Gather the exact year/make/model owner publication and any vehicle fuse images. Record market/trim/powertrain only when those records establish them.
+2. Transcribe references with labels and ratings, then independently compare against primary source pages. Preserve the original picture index separately from molded cavity codes.
+3. Add owner-guide citations, per-feature uncertainty, and coverage notes. Keep all unverified fields explicit.
+4. Add approximate model component definitions and only sourced component roles. Keep one generic geometry/template until legitimate profile geometry data exists; do not imply exact factory CAD.
+5. Add symptom guides and synthetic training scenarios only with the boundary labels above.
+6. Add the profile object to `vehicleProfiles`; run shared search, guide, print, and model rendering from the active profile. Only expose vehicle switching after both profiles have complete, reviewed data and all controls consume the selected profile.
+
+## Current profile coverage
+
+The embedded 2012 Dodge Grand Caravan profile uses the linked Mopar Owner Guide, the user-supplied fuse reference screenshots, and clearly labeled general training content. Its viewer uses locally bundled Three.js WebGL with OrbitControls, an approximate procedural minivan model, and a Canvas fallback. It does not assert a trim, market, or engine configuration; it does not provide factory geometry, service-manual wiring, connector pinouts, live diagnostic codes, or vehicle telemetry. See `assets/THIRD_PARTY_NOTICES.md` for bundled-runtime licensing.
+
