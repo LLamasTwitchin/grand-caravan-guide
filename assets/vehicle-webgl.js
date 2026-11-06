@@ -265,7 +265,18 @@
   function updatePinPositions(){const buttons=document.querySelectorAll('.component-pin');buttons.forEach(b=>{const id=Object.keys(components).find(k=>components[k].label===b.textContent);if(!id)return;const pin=anchorMeshes[id]||{position:anchor(id)},pos=pin.position.clone().project(camera);const w=wrap.clientWidth,h=wrap.clientHeight;const inFrame=!hiddenComponents.has(id)&&pos.z>-1&&pos.z<1&&Math.abs(pos.x)<1.08&&Math.abs(pos.y)<1.08;b.style.visibility=inFrame?'visible':'hidden';b.style.left=`${(pos.x*.5+.5)*w}px`;b.style.top=`${(-pos.y*.5+.5)*h}px`;b.style.transform='translate(-50%,-50%)';b.setAttribute('aria-pressed',String(id===selected));});}
   function project(id,w,h){const p=(anchorMeshes[id]?.position||anchor(id)).clone().project(camera);return{x:(p.x*.5+.5)*w,y:(-p.y*.5+.5)*h};}
   function setSelection(id){selected=id;Object.entries(meshesByPart).forEach(([key,g])=>g.traverse(o=>{if(o.isMesh&&o.material&&'emissive' in o.material){const base=o.userData.baseEmissive||0;o.material.emissiveIntensity=key===id?Math.max(.42,base):base;}}));Object.entries(anchorMeshes).forEach(([key,g])=>{g.scale.setScalar(key===id?1.45:1);});if(ui.getShowPath())setPath(true);updatePinPositions();}
-  function setPath(show){if(pathLine){scene.remove(pathLine);pathLine=null;}if(!show)return;const dest=anchor(selected),a=anchor('battery'),b=anchor('tipm'),mid1=new THREE.Vector3(a.x,a.y+.24,a.z),mid2=new THREE.Vector3(b.x,b.y+.24,b.z),end=new THREE.Vector3(dest.x,dest.y+.24,dest.z);const geo=new THREE.BufferGeometry().setFromPoints([a,mid1,b,mid2,end]);const material=new THREE.LineDashedMaterial({color:'#74d8ba',dashSize:.14,gapSize:.08,transparent:true,opacity:.9});pathLine=new THREE.Line(geo,material);pathLine.computeLineDistances();scene.add(pathLine);}
+  function setPath(show){
+    if(pathLine){scene.remove(pathLine);pathLine.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose();}});pathLine=null;}
+    if(!show)return;
+    // Training route is deliberately drawn above the shell for visibility, with an outline, amber body, and bright dashed center.
+    const dest=anchor(selected),a=anchor('battery'),b=anchor('tipm'),mid1=new THREE.Vector3(a.x,a.y+.24,a.z),mid2=new THREE.Vector3(b.x,b.y+.24,b.z),end=new THREE.Vector3(dest.x,dest.y+.24,dest.z);
+    const curve=new THREE.CatmullRomCurve3([a,mid1,b,mid2,end]),group=new THREE.Group();
+    const glow=new THREE.Mesh(new THREE.TubeGeometry(curve,96,.07,8,false),new THREE.MeshBasicMaterial({color:'#ff9d14',transparent:true,opacity:.3,depthTest:false,depthWrite:false,toneMapped:false}));glow.renderOrder=18;group.add(glow);
+    const casing=new THREE.Mesh(new THREE.TubeGeometry(curve,96,.045,8,false),new THREE.MeshBasicMaterial({color:'#101719',depthTest:false,depthWrite:false,toneMapped:false}));casing.renderOrder=19;group.add(casing);
+    const core=new THREE.Mesh(new THREE.TubeGeometry(curve,96,.027,8,false),new THREE.MeshBasicMaterial({color:'#ffad1f',depthTest:false,depthWrite:false,toneMapped:false}));core.renderOrder=20;group.add(core);
+    const dashGeometry=new THREE.BufferGeometry().setFromPoints(curve.getPoints(140)),dashes=new THREE.Line(dashGeometry,new THREE.LineDashedMaterial({color:'#fff8d7',dashSize:.105,gapSize:.075,depthTest:false,depthWrite:false,toneMapped:false}));dashes.computeLineDistances();dashes.renderOrder=21;group.add(dashes);
+    pathLine=group;scene.add(pathLine);
+  }
   const ZOOM_MIN=65,ZOOM_MAX=145,DISTANCE_MIN=controls.minDistance,DISTANCE_MAX=controls.maxDistance;
   function syncZoomSlider(){const input=document.getElementById('zoom-range');if(!input)return;const t=(DISTANCE_MAX-controls.getDistance())/(DISTANCE_MAX-DISTANCE_MIN);input.value=String(Math.round(ZOOM_MIN+THREE.MathUtils.clamp(t,0,1)*(ZOOM_MAX-ZOOM_MIN)));}
   function resetView(name=sceneMode){applyScene(name);syncZoomSlider();}
