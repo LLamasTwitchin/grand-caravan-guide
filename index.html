@@ -174,7 +174,7 @@ const vehicleProfiles={
 const profileId=document.body.dataset.vehicleProfile||'dodge-grand-caravan-2012';
 const activeProfile=vehicleProfiles[profileId]||vehicleProfiles['dodge-grand-caravan-2012'];
 window.activeVehicleProfile=activeProfile;
-const {fuses,groupInfo,guides}=activeProfile.data;
+const {fuses,guides}=activeProfile.data;
 const fuseList=document.querySelector('#fuse-list'),search=document.querySelector('#search'),filter=document.querySelector('#group-filter');let selected=1,activeGroup='Powertrain',guideIndex=0;
 function ampClass(n){return 'a'+n}
 function fuseKey(f){return f.manualOnly?f.cavity:f.n}
