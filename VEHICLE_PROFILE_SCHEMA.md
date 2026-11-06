@@ -20,11 +20,11 @@ The guide is organized as a shared viewer with one or more `vehicleProfiles`. Th
   },
   model: {
     kind: "three-webgl-procedural",
-    geometry: "approximate educational minivan silhouette",
-    proportions: { width: 1.52, length: 4.4, height: 1.94 }, // renderer scale hints, not measured factory dimensions
-    palette: { body: "#4f8882" },
+    geometry: "high-detail procedural exterior and simplified under-hood components; no factory CAD",
+    proportions: { width: 1.71, length: 4.4, height: 1.47 }, // scaled from 2012 Dodge published exterior dimensions
+    palette: { body: "#641116" }, // approximate Redline 2 Coat Pearl from user-provided report
     cameraViews: { exterior: { position: [4.5, 2.8, -5.4], target: [0, .82, 0] } },
-    scenes: ["exterior", "underhood"]
+    scenes: ["exterior", "underhood", "exploded"]
   },
   data: {
     fuses: [], groupInfo: {}, guides: [],
@@ -59,5 +59,4 @@ The guide is organized as a shared viewer with one or more `vehicleProfiles`. Th
 
 ## Current profile coverage
 
-The embedded 2012 Dodge Grand Caravan profile uses the linked Mopar Owner Guide, the user-supplied fuse reference screenshots, and clearly labeled general training content. Its viewer uses locally bundled Three.js WebGL with OrbitControls, an approximate procedural minivan model, and a Canvas fallback. It does not assert a trim, market, or engine configuration; it does not provide factory geometry, service-manual wiring, connector pinouts, live diagnostic codes, or vehicle telemetry. See `assets/THIRD_PARTY_NOTICES.md` for bundled-runtime licensing.
-
+The embedded 2012 Dodge Grand Caravan profile uses the linked Mopar Owner Guide, a secondary StartMyCar fuse-table cross-check, the user-supplied fuse reference screenshots, and clearly labeled general training content. Its viewer uses locally bundled Three.js WebGL with OrbitControls, a high-detail procedural exterior with cut side-window openings, visible cabin rows, an exploded structure view, a wireframe overlay, approximate selectable components, and a Canvas fallback. The SE trim and Redline 2 Coat Pearl color are taken from the user-provided vehicle-report screenshot and have not been independently decoded; the VIN is not stored. The model dimensions follow the 2012 Dodge published specifications, but its surfaces and parts remain educational approximations, not factory CAD. It does not provide service-manual wiring, connector pinouts, live diagnostic codes, or vehicle telemetry. See `assets/THIRD_PARTY_NOTICES.md` for bundled-runtime licensing.
