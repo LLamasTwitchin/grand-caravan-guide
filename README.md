@@ -1,9 +1,16 @@
-# 2012 Grand Caravan Fuse + Fault Field Guide
+# 2012 Dodge Grand Caravan Interactive Fuse + Fault Guide
 
-An interactive reference for fuse locations, circuit assignments, and general symptom-led troubleshooting for a 2012 Dodge Grand Caravan. See the guide’s **Reference + limits** section for its source and important vehicle-specific cautions.
+A self-contained learning simulator and reference for the 2012 Dodge Grand Caravan.
 
-Created with OpenAI Codex for LLamasTwitchin. This is an independent reference, not a substitute for the vehicle’s own fuse-cover legend or full service information.
+- Rotate and inspect a simplified 3D van model; switch between exterior and under-hood views.
+- Explore components and trace their simplified electrical paths.
+- Work through four training faults with simulated meter, scan, wiring, repair, and verification interactions.
+- Search the fuse index and consult the troubleshooting and safety references.
+
+All model geometry, readings, and fault cases are illustrative training aids. They are not live vehicle measurements, OEM wiring diagrams, or a substitute for the vehicle's fuse-cover legend and full service information. The page keeps screenshot index numbers distinct from the molded J/M cavity labels.
 
 ## Live guide
 
-https://llamastwitchin.github.io/grand-caravan-guide/#sources
+https://llamastwitchin.github.io/grand-caravan-guide/
+
+Created with OpenAI Codex for LLamasTwitchin.
