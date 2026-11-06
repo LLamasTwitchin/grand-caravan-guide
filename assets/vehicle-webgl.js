@@ -38,7 +38,7 @@
 
   const mat=(color,roughness=.55,metalness=.05,extra={})=>new THREE.MeshStandardMaterial({color,roughness,metalness,...extra});
   const palette=profile.model.palette||{};
-  const paint=new THREE.MeshPhysicalMaterial({color:palette.body||'#641116',roughness:.34,metalness:.14,clearcoat:.38,clearcoatRoughness:.32}),dark=mat('#1c2325',.72,.08),glass=mat('#244252',.14,.26,{transparent:true,opacity:.86,depthWrite:false}),sideWindowGlass=mat('#182328',.3,.08),rubber=mat('#101416',.8,.01),alloy=mat('#858e8b',.32,.62),trim=mat('#272e30',.48,.24),bright=mat('#b2bab5',.3,.68),lamp=mat('#f7e3ae',.2,.12,{emissive:'#9b7140',emissiveIntensity:.28}),red=mat('#a8413a',.24,.12,{emissive:'#39100f',emissiveIntensity:.28}),bayBase=mat('#202a2c',.84,.12),bayEngine=mat('#53635e',.76,.12),bayBattery=mat('#a78d47',.48,.22),bayTipm=mat('#b75435',.5,.12),bayAbs=mat('#76646a',.65,.12),bayRear=mat('#4e8177',.62,.12),bayAlt=mat('#787c9b',.42,.35);
+  const paint=new THREE.MeshPhysicalMaterial({color:palette.body||'#641116',roughness:.34,metalness:.14,clearcoat:.38,clearcoatRoughness:.32}),dark=mat('#1c2325',.72,.08),glass=mat('#244252',.14,.26,{transparent:true,opacity:.86,depthWrite:false}),sideWindowGlass=mat('#182328',.3,.08),rubber=mat('#101416',.8,.01),alloy=mat('#858e8b',.32,.62),wheelFinish=mat(palette.wheel||'#858e8b',.32,.62),trim=mat('#272e30',.48,.24),bright=mat('#b2bab5',.3,.68),lamp=mat('#f7e3ae',.2,.12,{emissive:'#9b7140',emissiveIntensity:.28}),red=mat('#a8413a',.24,.12,{emissive:'#39100f',emissiveIntensity:.28}),bayBase=mat('#202a2c',.84,.12),bayEngine=mat('#53635e',.76,.12),bayBattery=mat('#a78d47',.48,.22),bayTipm=mat('#b75435',.5,.12),bayAbs=mat('#76646a',.65,.12),bayRear=mat('#4e8177',.62,.12),bayAlt=mat('#787c9b',.42,.35);
   // Calibrate wheelbase and track against published 2012 body dimensions.
   const root=new THREE.Group();root.scale.set(1.16,.73,1);scene.add(root);
   const modelLength=4.4,dimensionScale=modelLength/5.151;
@@ -152,7 +152,7 @@
 
   // A restrained cabin silhouette visible through the glass: dashboard, three rows, and steering wheel.
   const cabin=new THREE.Group();bodyGroup.add(cabin);
-  const upholstery=mat('#30383a',.88,.02),seatInsert=mat('#424b4d',.92,.01);
+  const upholstery=mat(palette.interior||'#30383a',.88,.02),seatInsert=mat(palette.interior||'#30383a',.92,.01);seatInsert.color.multiplyScalar(1.16);
   roundedBlock(cabin,1.07,.18,.27,[0,1.02,-1.38],dark,.06);roundedBlock(cabin,.34,.11,.08,[0,1.08,-1.45],trim,.025);
   const steering=new THREE.Mesh(new THREE.TorusGeometry(.13,.016,10,32),trim);steering.position.set(-.35,1.04,-1.12);steering.rotation.z=-.16;cabin.add(steering);
   line(cabin,[[-.35,1.04,-1.12],[-.35,.87,-1.29]],new THREE.LineBasicMaterial({color:'#343a3b'}));
@@ -176,9 +176,9 @@
     const tire=new THREE.Mesh(new THREE.CylinderGeometry(tireRadius,tireRadius,tireWidth,48,1,false),rubber);tire.rotation.z=Math.PI/2;tire.castShadow=true;tire.receiveShadow=true;wheel.add(tire);
     const sidewall=new THREE.Mesh(new THREE.TorusGeometry(tireRadius*.82,.014,10,56),trim);sidewall.rotation.y=Math.PI/2;sidewall.position.x=side*.5*tireWidth;wheel.add(sidewall);
     const rotorRadius=.184,rotor=new THREE.Mesh(new THREE.CylinderGeometry(rotorRadius,rotorRadius,.035,48),alloy);rotor.rotation.z=Math.PI/2;rotor.position.x=side*.44*tireWidth;wheel.add(rotor);
-    const hub=new THREE.Mesh(new THREE.CylinderGeometry(.176,.176,.055,48),alloy);hub.rotation.z=Math.PI/2;hub.position.x=side*.50*tireWidth;wheel.add(hub);
+    const hub=new THREE.Mesh(new THREE.CylinderGeometry(.176,.176,.055,48),wheelFinish);hub.rotation.z=Math.PI/2;hub.position.x=side*.50*tireWidth;wheel.add(hub);
     // Ten split spokes echo the five paired spokes visible in the supplied photographs.
-    for(let i=0;i<10;i++){const a=i*Math.PI*2/10,spoke=new THREE.Mesh(new THREE.BoxGeometry(.035,.18,.055),alloy);spoke.position.set(side*.53*tireWidth,Math.cos(a)*.105,Math.sin(a)*.105);spoke.rotation.x=-a;wheel.add(spoke);if(i%2===0){const lug=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.07,12),dark);lug.rotation.z=Math.PI/2;lug.position.set(side*.56*tireWidth,Math.cos(a)*.145,Math.sin(a)*.145);wheel.add(lug);}}
+    for(let i=0;i<10;i++){const a=i*Math.PI*2/10,spoke=new THREE.Mesh(new THREE.BoxGeometry(.035,.18,.055),wheelFinish);spoke.position.set(side*.53*tireWidth,Math.cos(a)*.105,Math.sin(a)*.105);spoke.rotation.x=-a;wheel.add(spoke);if(i%2===0){const lug=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.07,12),dark);lug.rotation.z=Math.PI/2;lug.position.set(side*.56*tireWidth,Math.cos(a)*.145,Math.sin(a)*.145);wheel.add(lug);}}
     const cap=new THREE.Mesh(new THREE.CylinderGeometry(.062,.062,.075,28),trim);cap.rotation.z=Math.PI/2;cap.position.x=side*.55*tireWidth;wheel.add(cap);
     const caliper=new THREE.Mesh(new THREE.BoxGeometry(.035,.11,.09),red);caliper.position.set(side*.34*tireWidth,.06,.14);wheel.add(caliper);
     for(const dx of [-.045,0,.045]){const groove=new THREE.Mesh(new THREE.TorusGeometry(tireRadius-.008,.005,6,48),dark);groove.rotation.y=Math.PI/2;groove.position.x=dx;wheel.add(groove);}
@@ -285,6 +285,7 @@
   function setAutoOrbit(value){const toggle=document.getElementById('orbit-toggle'),note=document.getElementById('motion-note');if(reducedMotion.matches){controls.autoRotate=false;if(toggle){toggle.setAttribute('aria-pressed','false');toggle.disabled=true;toggle.title='Disabled because reduced motion is enabled.';}if(note)note.textContent='Auto orbit disabled: reduced-motion preference is on.';return false;}controls.autoRotate=Boolean(value);if(toggle){toggle.disabled=false;toggle.title='Slowly rotate the model automatically.';}if(note)note.textContent='';return controls.autoRotate;}
   function setComponentVisible(id,visible){if(meshesByPart[id])meshesByPart[id].visible=Boolean(visible);if(anchorMeshes[id])anchorMeshes[id].visible=Boolean(visible);if(visible)hiddenComponents.delete(id);else hiddenComponents.add(id);updatePinPositions();}
   function restoreAll(){[...hiddenComponents].forEach(id=>setComponentVisible(id,true));}
+  function setAppearance(value={}){if(value.body){paint.color.set(value.body);palette.body=value.body;}if(value.wheel){wheelFinish.color.set(value.wheel);palette.wheel=value.wheel;}if(value.interior){upholstery.color.set(value.interior);seatInsert.color.set(value.interior).multiplyScalar(1.16);palette.interior=value.interior;}bodyGroup.traverse(o=>{if(o.userData.wireOriginalMaterial===paint&&o.userData.wireGhostMaterial)o.userData.wireGhostMaterial.color.copy(paint.color)});return{body:palette.body,wheel:palette.wheel,interior:palette.interior};}
   function setWireframe(value){wireframeOn=Boolean(value);refreshWireframe();return wireframeOn;}
   function onPick(event){if(event.button!==0)return;const rect=canvas.getBoundingClientRect();pointer.x=((event.clientX-rect.left)/rect.width)*2-1;pointer.y=-((event.clientY-rect.top)/rect.height)*2+1;raycaster.setFromCamera(pointer,camera);const candidates=[...Object.values(meshesByPart),...Object.values(anchorMeshes)];const hits=raycaster.intersectObjects(candidates,true);const hit=hits.find(h=>{let o=h.object;while(o){if(o.userData&&o.userData.componentId)return true;o=o.parent;}return false;});if(hit){let o=hit.object;while(o&&!(o.userData&&o.userData.componentId))o=o.parent;if(o&&o.userData.componentId)ui.selectPart(o.userData.componentId);}}
   canvas.addEventListener('click',onPick);
@@ -298,5 +299,5 @@
   applyScene(sceneMode);setSelection(selected);resize();updateMotionPreference();
   function frame(){if(webglFailed)return;animationFrame=requestAnimationFrame(frame);resize();controls.update();renderer.render(scene,camera);updatePinPositions();}
   frame();
-  window.vehicleWebGLApi={setScene:applyScene,resetView,rotate,setZoom,setAutoOrbit,setSelection,setPath,setComponentVisible,restoreAll,setWireframe,project};
+  window.vehicleWebGLApi={setScene:applyScene,resetView,rotate,setZoom,setAutoOrbit,setSelection,setPath,setComponentVisible,restoreAll,setWireframe,setAppearance,project};
 })();
