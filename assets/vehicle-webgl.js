@@ -50,7 +50,7 @@
   const tireRadius=((17*25.4+2*225*.65)/2000)*dimensionScale;
   const wheelCenterY=(tireRadius+.075)/root.scale.y;
   const bodyGroup=new THREE.Group(),bayGroup=new THREE.Group(),markerGroup=new THREE.Group(),wireframeGroup=new THREE.Group();root.add(bodyGroup,bayGroup,markerGroup);scene.add(wireframeGroup);
-  const wheelGroups=[];let wireframeOn=false;
+  const wheelGroups=[];let wireframeOn=false,xrayOn=false;
   const meshesByPart={};
   function groupFor(id){if(!meshesByPart[id]){meshesByPart[id]=new THREE.Group();meshesByPart[id].userData.componentId=id;bayGroup.add(meshesByPart[id]);}return meshesByPart[id];}
   function box(parent,size,position,material,id=null,bevel=.025){
@@ -255,12 +255,12 @@
   const grid=new THREE.GridHelper(14,28,'#425052','#2e393b');grid.position.y=.075;grid.material.transparent=true;grid.material.opacity=.28;scene.add(grid);
   const shadow=new THREE.Mesh(new THREE.CircleGeometry(1.75,48),new THREE.MeshBasicMaterial({color:'#090d0e',transparent:true,opacity:.42}));shadow.rotation.x=-Math.PI/2;shadow.position.y=.078;shadow.scale.set(1.2,1.9,1);scene.add(shadow);
 
-  const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let selected=ui.getSelected(),pathLine=null,sceneMode=ui.getSceneMode(),lastWidth=0,lastHeight=0,animationFrame=0,webglFailed=false;const hiddenComponents=new Set(),reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+  const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let selected=ui.getSelected(),pathLine=null,pathDashes=[],sceneMode=ui.getSceneMode(),lastWidth=0,lastHeight=0,animationFrame=0,webglFailed=false;const hiddenComponents=new Set(),reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
   const views=profile.model.cameraViews||{};
   const originals={exterior:{position:new THREE.Vector3(...(views.exterior?.position||[4.5,2.8,-5.4])),target:new THREE.Vector3(...(views.exterior?.target||[0,.82,0]))},underhood:{position:new THREE.Vector3(...(views.underhood?.position||[1.45,2.7,-3.85])),target:new THREE.Vector3(...(views.underhood?.target||[0,.72,-1.2]))},underside:{position:new THREE.Vector3(...(views.underside?.position||[.35,-3.55,.85])),target:new THREE.Vector3(...(views.underside?.target||[0,.34,.2]))},exploded:{position:new THREE.Vector3(6.15,3.7,-7.05),target:new THREE.Vector3(0,.62,0)}};
   function setGhostMaterials(visible){bodyGroup.traverse(o=>{if(!o.isMesh)return;if(visible){if(!o.userData.wireOriginalMaterial)o.userData.wireOriginalMaterial=o.material;if(!o.userData.wireGhostMaterial){o.userData.wireGhostMaterial=o.material.clone();o.userData.wireGhostMaterial.transparent=true;o.userData.wireGhostMaterial.opacity=o.material===glass?.12:o.material===paint?.32:.22;o.userData.wireGhostMaterial.depthWrite=false;}o.material=o.userData.wireGhostMaterial;}else if(o.userData.wireOriginalMaterial){o.material=o.userData.wireOriginalMaterial;}});}
   function refreshWireframe(){while(wireframeGroup.children.length){const o=wireframeGroup.children[0];wireframeGroup.remove(o);if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();}wireframeGroup.visible=wireframeOn&&sceneMode!=='underhood';setGhostMaterials(wireframeGroup.visible&&sceneMode!=='underside');if(!wireframeGroup.visible)return;const edgeMat=new THREE.LineBasicMaterial({color:'#20292b',transparent:true,opacity:.94,depthTest:true});root.updateMatrixWorld(true);const targets=sceneMode==='underside'?[underbodyGroup]:[bodyGroup,cabin];for(const group of targets)group.traverse(o=>{if(o.isMesh&&o.geometry){o.updateWorldMatrix(true,false);const edges=new THREE.EdgesGeometry(o.geometry,34);const lines=new THREE.LineSegments(edges,edgeMat);lines.matrixAutoUpdate=false;lines.matrix.copy(o.matrixWorld);lines.matrixWorldNeedsUpdate=true;lines.renderOrder=5;wireframeGroup.add(lines);}});}
-  function applyScene(name){sceneMode=name;const exploded=name==='exploded',underside=name==='underside',underParts=new Set(['fuelTank','transaxle','exhaust','frontSuspension','rearSuspension']);bodyGroup.position.set(0,exploded?.62:0,0);cabin.position.set(0,exploded?-1.15:0,exploded?.22:0);bayGroup.position.set(0,exploded?-.92:0,exploded?-.32:0);bayGroup.visible=name==='underhood'||exploded;bodyGroup.visible=name!=='underhood'&&!underside;cabin.visible=name!=='underhood'&&!underside;underbodyGroup.visible=underside;wheelGroups.forEach(w=>{const s=w.userData.side;w.position.set(s*(exploded?w.userData.track+.36:w.userData.track),exploded?.08:wheelCenterY,w.userData.z);});Object.entries(anchorMeshes).forEach(([id,g])=>{const p=anchor(id);const bay=['battery','tipm','engine','radiator','alternator','abs','rear'].includes(id);g.position.set(p.x,p.y+(exploded?(bay?-.92:.62):0),p.z+(exploded&&bay?-.32:0));g.visible=(underside?underParts.has(id):!underParts.has(id))&&!hiddenComponents.has(id)});floor.visible=!underside;grid.visible=!underside;shadow.visible=!underside;controls.minPolarAngle=underside?1.62:name==='underhood'?.12:.25;controls.maxPolarAngle=underside?3.02:name==='underhood'?1.38:1.48;controls.target.copy(originals[name].target);camera.position.copy(originals[name].position);controls.update();refreshWireframe();syncZoomSlider();updatePinPositions();}
+  function applyScene(name){sceneMode=name;const exploded=name==='exploded',underside=name==='underside',underParts=new Set(['fuelTank','transaxle','exhaust','frontSuspension','rearSuspension']);bodyGroup.position.set(0,exploded?.62:0,0);cabin.position.set(0,exploded?-1.15:0,exploded?.22:0);bayGroup.position.set(0,exploded?-.92:0,exploded?-.32:0);bayGroup.visible=name==='underhood'||exploded;bodyGroup.visible=name!=='underhood'&&!underside;cabin.visible=name!=='underhood'&&!underside;underbodyGroup.visible=underside;wheelGroups.forEach(w=>{const s=w.userData.side;w.position.set(s*(exploded?w.userData.track+.36:w.userData.track),exploded?.08:wheelCenterY,w.userData.z);});Object.entries(anchorMeshes).forEach(([id,g])=>{const p=anchor(id);const bay=['battery','tipm','engine','radiator','alternator','abs','rear'].includes(id);g.position.set(p.x,p.y+(exploded?(bay?-.92:.62):0),p.z+(exploded&&bay?-.32:0));g.visible=(underside?underParts.has(id):!underParts.has(id))&&!hiddenComponents.has(id)});floor.visible=!underside;grid.visible=!underside;shadow.visible=!underside;controls.minPolarAngle=underside?1.62:name==='underhood'?.12:.25;controls.maxPolarAngle=underside?3.02:name==='underhood'?1.38:1.48;controls.target.copy(originals[name].target);camera.position.copy(originals[name].position);controls.update();refreshWireframe();if(xrayOn)setXray(true);syncZoomSlider();updatePinPositions();}
   function resize(){const w=wrap.clientWidth,h=wrap.clientHeight;if(!w||!h)return;if(w!==lastWidth||h!==lastHeight){lastWidth=w;lastHeight=h;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);updatePinPositions();}}
   function updatePinPositions(){const buttons=document.querySelectorAll('.component-pin');buttons.forEach(b=>{const id=Object.keys(components).find(k=>components[k].label===b.textContent);if(!id)return;const pin=anchorMeshes[id]||{position:anchor(id)},pos=pin.position.clone().project(camera);const w=wrap.clientWidth,h=wrap.clientHeight;const inFrame=!hiddenComponents.has(id)&&pos.z>-1&&pos.z<1&&Math.abs(pos.x)<1.08&&Math.abs(pos.y)<1.08;b.style.visibility=inFrame?'visible':'hidden';b.style.left=`${(pos.x*.5+.5)*w}px`;b.style.top=`${(-pos.y*.5+.5)*h}px`;b.style.transform='translate(-50%,-50%)';b.setAttribute('aria-pressed',String(id===selected));});}
   function project(id,w,h){const p=(anchorMeshes[id]?.position||anchor(id)).clone().project(camera);return{x:(p.x*.5+.5)*w,y:(-p.y*.5+.5)*h};}
@@ -269,12 +269,13 @@
     const haloMesh=new THREE.Mesh(new THREE.TubeGeometry(curve,90,radius+.045,8,false),new THREE.MeshBasicMaterial({color:halo,transparent:true,opacity:.72,depthTest:false,depthWrite:false,toneMapped:false}));haloMesh.renderOrder=18;group.add(haloMesh);
     const casing=new THREE.Mesh(new THREE.TubeGeometry(curve,90,radius+.012,8,false),new THREE.MeshBasicMaterial({color:'#071014',depthTest:false,depthWrite:false,toneMapped:false}));casing.renderOrder=19;group.add(casing);
     const core=new THREE.Mesh(new THREE.TubeGeometry(curve,90,radius*.7,8,false),new THREE.MeshBasicMaterial({color:coreColor,depthTest:false,depthWrite:false,toneMapped:false}));core.renderOrder=20;group.add(core);
-    const dashes=new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(110)),new THREE.LineDashedMaterial({color:'#ffffff',dashSize:.09,gapSize:.07,depthTest:false,depthWrite:false,toneMapped:false}));dashes.computeLineDistances();dashes.renderOrder=21;group.add(dashes);
+    const dashes=new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(110)),new THREE.LineDashedMaterial({color:'#ffffff',dashSize:.09,gapSize:.07,depthTest:false,depthWrite:false,toneMapped:false}));dashes.computeLineDistances();dashes.renderOrder=21;group.add(dashes);pathDashes.push(dashes);
   }
   function routeMarker(group,position,color,radius){const marker=new THREE.Mesh(new THREE.SphereGeometry(radius,16,12),new THREE.MeshBasicMaterial({color,depthTest:false,depthWrite:false,toneMapped:false}));marker.position.copy(position);marker.renderOrder=22;group.add(marker);}
   function setPath(show){
+    pathDashes=[];
     if(pathLine){scene.remove(pathLine);pathLine.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose();}});pathLine=null;}
-    if(!show)return;
+    if(!show){if(anchorMeshes[selected])anchorMeshes[selected].scale.setScalar(1.7);return;}
     // Amber supply and blue simplified return are drawn above the shell so they stay readable. The return end is near the battery for teaching only. It is not a ground-stud location.
     const dest=anchor(selected),a=anchor('battery'),b=anchor('tipm');
     const lift=(v,y)=>new THREE.Vector3(v.x,v.y+y,v.z);
@@ -299,7 +300,26 @@
   function setComponentVisible(id,visible){if(meshesByPart[id])meshesByPart[id].visible=Boolean(visible);if(anchorMeshes[id])anchorMeshes[id].visible=Boolean(visible);if(visible)hiddenComponents.delete(id);else hiddenComponents.add(id);updatePinPositions();}
   function restoreAll(){[...hiddenComponents].forEach(id=>setComponentVisible(id,true));}
   function setAppearance(value={}){if(value.body){paint.color.set(value.body);palette.body=value.body;}if(value.wheel){wheelFinish.color.set(value.wheel);palette.wheel=value.wheel;}if(value.interior){upholstery.color.set(value.interior);seatInsert.color.set(value.interior).multiplyScalar(1.16);palette.interior=value.interior;}bodyGroup.traverse(o=>{if(o.userData.wireOriginalMaterial===paint&&o.userData.wireGhostMaterial)o.userData.wireGhostMaterial.color.copy(paint.color)});return{body:palette.body,wheel:palette.wheel,interior:palette.interior};}
-  function setWireframe(value){wireframeOn=Boolean(value);refreshWireframe();return wireframeOn;}
+  function rememberXray(m){if(!m||!('opacity' in m)||m.userData.xrayBaseOpacity!=null)return;m.userData.xrayBaseOpacity=m.opacity;m.userData.xrayBaseTransparent=!!m.transparent;m.userData.xrayBaseDepth=m.depthWrite!==false;}
+  function restoreXray(m){if(!m||m.userData.xrayBaseOpacity==null)return;m.opacity=m.userData.xrayBaseOpacity;m.transparent=m.userData.xrayBaseTransparent;m.depthWrite=m.userData.xrayBaseDepth;m.needsUpdate=true;}
+  function setXray(value){
+    xrayOn=Boolean(value);
+    [bodyGroup,cabin].forEach(group=>group.traverse(o=>{
+      if(!o.isMesh)return;
+      [o.material,o.userData.wireOriginalMaterial,o.userData.wireGhostMaterial].forEach(entry=>{
+        const list=Array.isArray(entry)?entry:[entry];
+        list.forEach(m=>{
+          if(!m||!('opacity' in m))return;
+          rememberXray(m);
+          const active=entry===o.material||(Array.isArray(o.material)&&o.material.indexOf(m)>=0);
+          if(xrayOn&&active){m.transparent=true;m.opacity=.16;m.depthWrite=false;m.needsUpdate=true;}
+          else if(!xrayOn)restoreXray(m);
+        });
+      });
+    }));
+    return xrayOn;
+  }
+  function setWireframe(value){wireframeOn=Boolean(value);refreshWireframe();if(xrayOn)setXray(true);return wireframeOn;}
   function onPick(event){if(event.button!==0)return;const rect=canvas.getBoundingClientRect();pointer.x=((event.clientX-rect.left)/rect.width)*2-1;pointer.y=-((event.clientY-rect.top)/rect.height)*2+1;raycaster.setFromCamera(pointer,camera);const candidates=[...Object.values(meshesByPart),...Object.values(anchorMeshes)];const hits=raycaster.intersectObjects(candidates,true);const hit=hits.find(h=>{let o=h.object;while(o){if(o.userData&&o.userData.componentId)return true;o=o.parent;}return false;});if(hit){let o=hit.object;while(o&&!(o.userData&&o.userData.componentId))o=o.parent;if(o&&o.userData.componentId)ui.selectPart(o.userData.componentId);}}
   canvas.addEventListener('click',onPick);
   controls.addEventListener('change',()=>{updatePinPositions();syncZoomSlider()});
@@ -310,7 +330,7 @@
   reducedMotion.addEventListener?reducedMotion.addEventListener('change',updateMotionPreference):reducedMotion.addListener(updateMotionPreference);
   canvas.style.display='block';fallbackCanvas.style.display='none';if(warning)warning.style.display='none';
   applyScene(sceneMode);setSelection(selected);resize();updateMotionPreference();
-  function frame(){if(webglFailed)return;animationFrame=requestAnimationFrame(frame);resize();controls.update();renderer.render(scene,camera);updatePinPositions();}
+  function frame(){if(webglFailed)return;animationFrame=requestAnimationFrame(frame);resize();controls.update();if(pathDashes.length&&!reducedMotion.matches){const shift=performance.now()*0.001;pathDashes.forEach((line,i)=>{if(line.material)line.material.dashOffset=-(shift*(i?.22:.42));});if(anchorMeshes[selected])anchorMeshes[selected].scale.setScalar(1.7*(1+Math.sin(performance.now()/170)*.07));}renderer.render(scene,camera);updatePinPositions();}
   frame();
-  window.vehicleWebGLApi={setScene:applyScene,resetView,rotate,setZoom,setAutoOrbit,setSelection,setPath,setComponentVisible,restoreAll,setWireframe,setAppearance,project};
+  window.vehicleWebGLApi={setScene:applyScene,resetView,rotate,setZoom,setAutoOrbit,setSelection,setPath,setComponentVisible,restoreAll,setWireframe,setXray,setAppearance,project};
 })();

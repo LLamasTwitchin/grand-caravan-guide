@@ -46,7 +46,49 @@
   .diagrams-panel,.recalls-panel{padding:16px}
   .diagrams-panel h2,.recalls-panel h2{font-size:22px}
 }
+.a11y-bar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:0 0 14px;color:#c5d0cd;font:800 11px ui-monospace,Consolas,monospace}
+.a11y-bar button,.a11y-bar label{border:1px solid #ffffff30;background:#151d20;color:#e7eeec;padding:6px 8px}
+.a11y-bar button[aria-pressed=true]{border-color:#ffb15a;color:#ffd7ad}
+.a11y-bar input{accent-color:#ff8a3d;width:110px}
+#a11y-note{font-weight:650;color:#9fb0ac}
+.fav-only{display:flex;align-items:center;gap:6px;font-size:12px;color:#243033}
+#save-fuse{border:1px solid #c9c4ba;background:#fffdfa;color:#243033;padding:8px 10px;font:800 11px ui-monospace,Consolas,monospace}
+.fault-lab{margin-top:12px;padding-top:10px;border-top:1px solid #d5d0c6}
+.fault-actions{display:flex;flex-wrap:wrap;gap:6px}
+.fault-actions button{border:1px solid #c6c0b6;background:#faf8f3;color:#243033;padding:7px 8px;font:800 10px ui-monospace,Consolas,monospace}
+.fault-actions button[aria-pressed=true]{background:#243033;color:#fff;border-color:#243033}
+#fault-note{font-size:11px;color:#526064;margin:8px 0 0}
+.lab-panel{margin-top:18px;padding:22px;background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
+.lab-panel h2{font-size:25px;letter-spacing:-.035em;line-height:1.12;margin:0 0 7px}
+.lab-panel h3{margin:12px 0 6px;font-size:18px}
+.lab-kicker{font:800 10px ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:#667075;margin:0 0 6px}
+.lab-note{font-size:13px;color:#3e4a4d}
+.lab-tabs,.lab-choices,.lab-row{display:flex;flex-wrap:wrap;gap:6px}
+.lab-tabs{margin:0 0 12px}
+.lab-tabs button,.lab-choices button,.lab-row button,#component-app button{border:1px solid #c9c4ba;background:#fffdfa;color:#182124;padding:8px 10px;text-align:left}
+.lab-tabs button[aria-pressed=true],.lab-choices button[aria-pressed=true]{background:#182124;color:#f4f1ea;border-color:#182124}
+.lab-choices{margin:8px 0}
+.lab-choices button{flex:1 1 220px}
+.component-card,.score-card{border:1px solid #c9c4ba;background:#fffdfa;padding:12px;margin:10px 0}
+.score-card{background:#e7f3f1;border-color:#2e8b83}
+.lab-name{display:grid;gap:4px;font-size:12px;margin:8px 0}
+.lab-name input, #version-app textarea{width:100%;max-width:520px;padding:8px;border:1px solid #c9c4ba;background:#fffdfa;color:#182124}
+.diagram-role{font-size:12px;color:#3d4c52;border-left:3px solid #4b78ac;padding-left:8px}
+#walk-print,#quiz-print{display:none}
+html.contrast body{background:#000;color:#fff}
+html.contrast .surface,html.contrast .lab-panel,html.contrast .learning-hub,html.contrast .simdock,html.contrast .diagram-detail{background:#fff;color:#000}
+html.contrast .simlab,html.contrast .detail{background:#000;color:#fff;border-color:#fff}
+html.contrast a{text-decoration:underline}
+html.contrast .lab-tabs button,html.contrast .lab-choices button,html.contrast .fuse{border-color:#000}
+@media(max-width:800px){
+  .lab-panel{padding:16px}
+  .lab-panel h2{font-size:22px}
+  .a11y-bar{font-size:10px}
+}
 @media print{
+  .a11y-bar,.fault-lab,.lab-tabs,.lab-choices,.lab-row,#save-fuse,.fav-only{display:none!important}
+  #walk-print,#quiz-print{display:block!important}
+  .lab-panel,#mfr-comms,#version-log{box-shadow:none;border:1px solid #bbb;background:#fff;color:#182124;break-inside:avoid}
   .diagram-tabs,.diagram-layout,.path-legend{display:none!important}
   #diagram-print{display:block!important}
   .diagram-print-block,.recall-card{break-inside:avoid;border:1px solid #bbb;padding:8px;margin:8px 0}

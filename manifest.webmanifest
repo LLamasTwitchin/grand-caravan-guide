@@ -1,0 +1,13 @@
+{
+  "name": "2012 Grand Caravan Electrical Lab",
+  "short_name": "GC Lab",
+  "description": "Training guide for the 2012 Dodge Grand Caravan electrical system. Practice readings are simulated.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#151a1d",
+  "theme_color": "#151a1d",
+  "icons": [
+    {"src": "./assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"}
+  ]
+}

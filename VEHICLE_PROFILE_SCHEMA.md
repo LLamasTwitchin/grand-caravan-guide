@@ -55,6 +55,8 @@ The guide is organized as a shared viewer with one or more `vehicleProfiles`. Th
 
 `assets/system-diagrams.js` and `assets/reported-issues.js` key extra sections by profile id. A profile with no entry hides that section, so the shared page does not need a rewrite to add a vehicle. Diagrams must say they are not OEM wiring diagrams. Recall records must name the source, the retrieval date, and who the campaign can include. Do not turn complaint counts or recall lists into a ranked "top problems" list. Do not store a VIN in either file.
 
+`assets/training-lab.js` is the walkthrough, quiz, and component-role layer for the current profile. Quiz scores and saved fuses stay in the browser. A practice card must say it is not a professional certificate. Component terminals are functional roles, not connector pin numbers. Manufacturer communications in `assets/mfr-comms.js` must name the NHTSA file, the retrieval date, and the product row. Paraphrase the public summary. Do not paste a bulletin, and do not invent a document number.
+
 ## Adding a profile
 
 1. Gather the exact year/make/model owner publication and any vehicle fuse images. Record market/trim/powertrain only when those records establish them.
