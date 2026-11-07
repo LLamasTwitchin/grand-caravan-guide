@@ -1,8 +1,9 @@
 /* Offline cache for the guide. Relative paths keep GitHub Pages and a local server in the same scope. */
-const CACHE='gc-guide-v21';
+const CACHE='gc-guide-v23';
 const FILES=[
   './',
   './index.html',
+  './diagnostic-walkthrough.html',
   './manifest.webmanifest',
   './assets/guide-additions.css',
   './assets/system-diagrams.js',
