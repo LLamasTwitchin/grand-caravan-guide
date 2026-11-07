@@ -5,8 +5,10 @@ A self-contained troubleshooting and electrical learning guide with a real-time 
 - Orbit, pan, zoom, reset, and auto-orbit the approximate 3D minivan model.
 - Switch between exterior and under-hood learning views; select labeled components and trace a simplified training path.
 - Work through four clearly simulated diagnostic cases with meter, scan, wiring, repair, and verification interactions.
-- Search 58 user-screenshot fuse references and consult the separate Mopar J12 cavity reference.
-- Read expanded symptom guides, circuit lessons, owner safety notes, and print/save the guide as PDF.
+- Search 58 user-screenshot fuse references and consult the separate Mopar J12 cavity reference. Each row shows the screenshot index and the J/M cavity as different labels, and the printable TIPM PDF is linked from the fuse section.
+- Read expanded symptom guides, including a sourced limp-home guide that separates owner-guide facts from possibilities, plus circuit lessons, owner safety notes, and print/save the guide as PDF.
+- Open functional diagrams for power distribution, starting and charging, cooling, HVAC, and lighting. Each diagram says it is not an OEM wiring diagram.
+- Read the NHTSA recall snapshot for this model year. Campaigns are listed with their limits. They are not a ranking of common problems.
 
 ## Accuracy and limits
 
@@ -22,5 +24,7 @@ Primary vehicle reference: [2012 Dodge Grand Caravan Owner Guide](https://vehicl
 
 https://llamastwitchin.github.io/grand-caravan-guide/
 
-Created with OpenAI Codex for LLamasTwitchin.
+Check the screenshot-index and cavity split with `node scripts/check-guide.js`.
+
+Created with OpenAI Codex for LLamasTwitchin. Extended in this repository without replacing the learning lab.
 
