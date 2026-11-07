@@ -51,6 +51,10 @@ The guide is organized as a shared viewer with one or more `vehicleProfiles`. Th
 - Components are approximate selectable labels/roles/positions for the model. Do not represent connector pins, wire colors, internal construction, or actual OEM routing without sourced service data and careful review.
 - A personal repair report or historic price quote is a case-study artifact, not authoritative service data. Keep it as a separately labeled source with author/date/context and verify each technical claim before turning it into a reusable profile fact.
 
+## Optional profile extensions
+
+`assets/system-diagrams.js` and `assets/reported-issues.js` key extra sections by profile id. A profile with no entry hides that section, so the shared page does not need a rewrite to add a vehicle. Diagrams must say they are not OEM wiring diagrams. Recall records must name the source, the retrieval date, and who the campaign can include. Do not turn complaint counts or recall lists into a ranked "top problems" list. Do not store a VIN in either file.
+
 ## Adding a profile
 
 1. Gather the exact year/make/model owner publication and any vehicle fuse images. Record market/trim/powertrain only when those records establish them.

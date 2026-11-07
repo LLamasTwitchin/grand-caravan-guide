@@ -1,0 +1,55 @@
+/* Additions for system diagrams, recall cards, and dual fuse labels. */
+.tabs{flex-wrap:wrap;overflow:visible}
+.fuse{grid-template-columns:40px 54px 46px minmax(0,1fr)!important}
+.fcavity{font:800 11px/1.15 ui-monospace,Consolas,monospace;color:#9a3e18;letter-spacing:.01em}
+.fuse-pdf-row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline;margin:0 0 12px;font-size:13px}
+.fuse-pdf-row a{color:#9a3e18;font-weight:800}
+.fuse-ambiguity{background:#fff1e6;border:1px solid #e0a06a;color:#3a2a22;padding:10px 12px;margin:0 0 12px;font-size:13px}
+.fuse-ambiguity strong{color:#161b1d}
+.claim{margin:10px 0;padding:10px 12px;border-left:3px solid #2e8b83;background:#e7f3f1}
+.claim h4{margin:0 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.claim ul{margin:0;padding-left:18px}
+.claim.possible{border-color:#c9842a;background:#f8f1e4}
+.claim.limit{border-color:#a83e35;background:#f8ecea}
+.path-legend{margin:0;padding:8px 12px;background:#101719;color:#d5e4e1;font-size:12px;line-height:1.4}
+.path-legend[hidden]{display:none}
+.diagrams-panel,.recalls-panel{margin-top:18px;padding:22px;background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
+.diagrams-panel h2,.recalls-panel h2{font-size:25px;letter-spacing:-.035em;line-height:1.12;margin:0 0 7px}
+.diagram-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.diagram-tabs button{border:1px solid #c9c4ba;background:#fffdfa;color:#273033;padding:8px 10px;font:800 11px ui-monospace,Consolas,monospace;letter-spacing:.04em;text-transform:uppercase}
+.diagram-tabs button[aria-selected=true]{background:#182124;color:#f4f1ea;border-color:#182124}
+.diagram-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(240px,.7fr);gap:16px;align-items:start}
+.diagram-chain{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.diagram-chain button,.diagram-branch button{text-align:left;border:1px solid #c9c4ba;background:#fffdfa;color:#182124;padding:8px 10px;min-width:120px}
+.diagram-chain button[aria-pressed=true],.diagram-branch button[aria-pressed=true]{border-color:#cb562a;box-shadow:inset 3px 0 0 #ff8a3d}
+.diagram-chain button small,.diagram-branch button small{display:block;color:#5c6768;font-size:11px;font-weight:600}
+.diagram-chain button.warn{background:#fff1e6}
+.diagram-branch{margin-top:12px;padding-top:10px;border-top:1px solid #ddd6c8}
+.diagram-branch h3{margin:0 0 8px;font-size:13px}
+.diagram-limit,.recall-note{font-size:12px;color:#525d60;margin:12px 0 0}
+.diagram-detail{background:#e7e3d9;padding:12px;min-height:140px}
+.diagram-detail h3{margin:0 0 6px;font-size:16px}
+.diagram-detail p{margin:0 0 8px;font-size:13px}
+.diagram-detail button,.recall-card a{font-weight:800}
+.confidence{display:inline-block;margin-bottom:8px;padding:2px 6px;font:800 10px ui-monospace,Consolas,monospace;letter-spacing:.06em;text-transform:uppercase;background:#182124;color:#f4f1ea}
+.confidence.possible{background:#8a5a18}
+.confidence.training{background:#3d5c66}
+.recall-list{display:grid;gap:10px}
+.recall-card{border:1px solid #c9c4ba;background:#fffdfa;padding:12px 14px}
+.recall-card h3{margin:0 0 4px;font-size:16px}
+.recall-card p{margin:6px 0;font-size:13px}
+.recall-meta{font:800 10px ui-monospace,Consolas,monospace;letter-spacing:.06em;text-transform:uppercase;color:#667075}
+#diagram-print{display:none}
+@media(max-width:800px){
+  .diagram-layout{grid-template-columns:1fr}
+  .fuse{grid-template-columns:36px 48px 40px minmax(0,1fr)!important}
+  .diagrams-panel,.recalls-panel{padding:16px}
+  .diagrams-panel h2,.recalls-panel h2{font-size:22px}
+}
+@media print{
+  .diagram-tabs,.diagram-layout,.path-legend{display:none!important}
+  #diagram-print{display:block!important}
+  .diagram-print-block,.recall-card{break-inside:avoid;border:1px solid #bbb;padding:8px;margin:8px 0}
+  .diagrams-panel,.recalls-panel{box-shadow:none;border:1px solid #bbb;background:#fff;color:#182124}
+  .fuse{grid-template-columns:42px 58px 42px minmax(0,1fr)!important}
+}
