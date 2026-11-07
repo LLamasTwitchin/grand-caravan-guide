@@ -28,9 +28,21 @@ if(!lab.includes('not a professional certificate'))fail('quiz must say it is not
 if(!lab.includes('not connector pin numbers'))fail('component roles must reject pin numbers');
 if(/\bpin\s*\d+/i.test(lab))fail('component library invented a pin number');
 if(!comms.includes('10051775')||!comms.includes('not a fuse'))fail('manufacturer communication record is missing its limit');
-if(!sw.includes('gc-guide-v21'))fail('service worker cache name changed unexpectedly');
-if(!html.includes('manifest.webmanifest'))fail('manifest is not linked');
+if(!sw.includes('gc-guide-v23'))fail('service worker cache name changed unexpectedly');
+if(!sw.includes('./diagnostic-walkthrough.html'))fail('walkthrough page is not in the offline cache');
+if(!html.includes('href="./diagnostic-walkthrough.html"'))fail('no-crank wizard is not linked from index.html');
 const vin=/\b[A-HJ-NPR-Z0-9]{17}\b/;
+const walk=fs.readFileSync(path.join(root,'diagnostic-walkthrough.html'),'utf8');
+if(!walk.includes('No-Crank Diagnostic Walkthrough'))fail('walkthrough title is missing');
+if(!walk.includes('Above 12.4V')||!walk.includes('Below 12.4V'))fail('battery voltage branch is missing');
+if(!walk.includes('J17')||!walk.includes('starter-solenoid'))fail('walkthrough must use the starter-solenoid fuse');
+if(!walk.includes('J20 is the 30 A front wiper'))fail('J20 must stay identified as the wiper fuse');
+if(/check Fuse J20/i.test(walk))fail('walkthrough sent a no-crank check to cavity J20');
+if(!walk.includes('M13')||!walk.includes('M15')||!walk.includes('M20')||!walk.includes('noFUSE'))fail('cluster walk is missing a documented fuse or the noFUSE message');
+if(!walk.includes('J13')||!walk.includes('60 A IOD'))fail('cluster walk is missing the IOD main fuse');
+if(/M17 is the instrument cluster/i.test(walk))fail('tail-lamp fuse was described as the cluster fuse');
+if(vin.test(walk))fail('possible VIN-like token in walkthrough');
+if(!html.includes('manifest.webmanifest'))fail('manifest is not linked');
 for(const [name,text] of [['index',html],['diagrams',diagrams],['recalls',recalls],['lab',lab],['comms',comms]]){
   if(vin.test(text))fail('possible VIN-like token in '+name);
 }

@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#151a1d">
+<title>Diagnostic Walkthroughs · 2012 Grand Caravan</title>
+<style>
+  :root{--ink:#151a1d;--panel:#f3f0e9;--line:#c9c4b9;--muted:#667075;--white:#f9f8f3;--orange:#ff8a3d;--orange2:#cb562a;--blue:#4b78ac;--teal:#2e8b83;--shadow:0 18px 50px #070b0d55}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(ellipse at 88% 0%,#263134 0,transparent 42%),var(--ink);color:var(--white);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+  a{color:#ffb06c}
+  button{font:inherit;cursor:pointer}
+  :focus-visible{outline:3px solid #ffb76b;outline-offset:3px}
+  .shell{max-width:860px;margin:auto;padding:28px clamp(14px,3vw,42px) 56px}
+  .topline{display:flex;justify-content:space-between;gap:16px;align-items:center;border-bottom:1px solid #ffffff21;padding-bottom:17px;color:#aeb8b8;font:700 11px/1.2 ui-monospace,Consolas,monospace;letter-spacing:.13em;text-transform:uppercase}
+  .topline a{color:#c3cfcc;text-decoration:none}
+  .topline a:hover{color:#fff}
+  .brand{display:flex;gap:9px;align-items:center}
+  .brand-mark{width:27px;height:27px;display:grid;place-items:center;background:var(--orange);color:#161b1d;clip-path:polygon(0 0,100% 0,100% 74%,74% 100%,0 100%);font-weight:900;font-size:14px}
+  h1{font-size:clamp(28px,5vw,44px);line-height:1;letter-spacing:-.045em;margin:22px 0 8px}
+  .lead{color:#bbc4c2;margin:0 0 16px}
+  .switch{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+  .switch button{border:1px solid #ffffff30;background:#151d20;color:#e7eeec;padding:10px 12px;font:800 12px ui-monospace,Consolas,monospace}
+  .switch button[aria-pressed=true]{border-color:#ffb15a;background:#3a2b25;color:#fff}
+  .progress{display:flex;gap:6px;margin:0 0 14px}
+  .progress span{flex:1;height:4px;background:#ffffff22}
+  .progress span.on{background:var(--orange)}
+  .progress span.control{background:var(--blue)}
+  .card,.sheet{background:var(--panel);color:var(--ink);box-shadow:var(--shadow);padding:22px}
+  .sheet{margin-top:16px}
+  .kicker{color:#596366;font:800 10px ui-monospace,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;margin:0 0 8px}
+  #step h2,.sheet h2{font-size:26px;letter-spacing:-.035em;line-height:1.12;margin:0 0 8px}
+  #step p,.sheet p,.sheet li{color:#313b3e}
+  #step p{margin:0 0 12px}
+  .sheet h3{font-size:16px;margin:16px 0 6px}
+  .sheet ol,.sheet ul{margin:0 0 10px;padding-left:18px}
+  .sheet li+li{margin-top:4px}
+  .note{border-left:3px solid var(--orange);background:#fff1e6;padding:10px 12px;margin:0 0 14px;font-size:13px;color:#3a2a22}
+  .note.blue{border-left-color:var(--blue);background:#e7eef6;color:#1e3348}
+  .choices{display:grid;gap:8px}
+  .choices button{text-align:left;border:1px solid #c9c4ba;background:#fffdfa;color:#182124;padding:12px 14px;font-weight:750}
+  .choices button.amber{border-color:#e0a06a;box-shadow:inset 4px 0 0 var(--orange)}
+  .choices button.blue{border-color:#8eafd0;box-shadow:inset 4px 0 0 var(--blue)}
+  .choices button:hover{background:#fff5eb}
+  .nav{display:flex;gap:8px;margin-top:16px}
+  .nav button{border:1px solid #c9c4ba;background:#e8e4db;color:#243033;padding:8px 12px;font:800 11px ui-monospace,Consolas,monospace;letter-spacing:.04em;text-transform:uppercase}
+  .nav button:disabled{opacity:.4;cursor:not-allowed}
+  .stop{border-left:3px solid var(--teal);background:#e7f3f1;padding:10px 12px}
+  .sheet table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0 14px}
+  .sheet th,.sheet td{border-bottom:1px solid #d5d0c6;text-align:left;padding:6px 4px;vertical-align:top}
+  .sheet th{font:800 10px ui-monospace,Consolas,monospace;letter-spacing:.06em;text-transform:uppercase;color:#596366}
+  @media(max-width:600px){.shell{padding:16px 12px 36px}.card,.sheet{padding:16px}#step h2,.sheet h2{font-size:22px}}
+  @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+  @media print{body{background:#fff;color:#182124}.topline,.switch,.progress,.nav,.choices{display:none!important}.card,.sheet{box-shadow:none;border:1px solid #bbb}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <header class="topline"><div class="brand"><span class="brand-mark">GC</span><span>Field reference / electrical</span></div><a href="./index.html#walkthroughs">Back to the lab</a></header>
+  <h1 id="walk-heading">No-Crank Diagnostic Walkthrough</h1>
+  <p class="lead">One observation at a time. A branch is a lesson. It is not a measurement from a van, and it does not prove a part failed. Use the TIPM cover label if it disagrees with this page. 12.4 V is the lesson threshold for a resting battery, engine off. It is not a factory pass/fail limit.</p>
+  <div class="switch" role="group" aria-label="Choose a walkthrough">
+    <button type="button" id="pick-crank" aria-pressed="true">No-crank</button>
+    <button type="button" id="pick-cluster" aria-pressed="false">No dash / cluster lights</button>
+  </div>
+  <div class="progress" id="progress" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <section class="card" id="step" aria-live="polite"></section>
+  <article class="sheet" id="cluster-sheet">
+    <p class="kicker">Owner guide + this crosswalk</p>
+    <h2>No dash lights and a dark cluster</h2>
+    <p>These are different complaints. Panel illumination can be off while the gauges still work. A blank cluster can sit in a van whose dome light and radio still work. A van with no cluster, no radio, and no interior lights is a shared-supply problem. Tail and park lamps are a third circuit. Sort the pattern before you pull a fuse.</p>
+    <table>
+      <thead><tr><th>What is dark</th><th>First documented check</th><th>What a fix means</th></tr></thead>
+      <tbody>
+        <tr><td>Panel lighting only. Gauges, gear, and warning lamps still work with the key ON.</td><td>Headlamp switch, then the dimmer, then cavity M20.</td><td>Restoring switch position or the dimmer is the repair. An open M20 is replaced once at 15 A. A fuse that stays closed does not explain why it opened.</td></tr>
+        <tr><td>Cluster blank with the key ON. No lamp check, no gear, no gauges. Other cabin loads still work.</td><td>Resting battery voltage, then M13 and M15. They are two rows.</td><td>Charge or replace the battery only after a load test. Replace only the open cluster fuse, same 20 A rating, once. Two intact fuses do not prove the cluster failed.</td></tr>
+        <tr><td>Cluster, radio, and interior lights are dead together.</td><td>Battery posts, then cavity J13, the 60 A IOD main.</td><td>A loose or wrong IOD fuse is the owner guide’s noFUSE case. Reseat or replace that fuse once. A pattern this wide does not prove the TIPM or the cluster failed.</td></tr>
+        <tr><td>Outside park or tail lamps only.</td><td>Headlamp switch, first detent, then M17 and M18.</td><td>Those rows are the exterior lamps. They are not the instrument-panel light fuse.</td></tr>
+      </tbody>
+    </table>
+    <h3>1. See what still works</h3>
+    <ol>
+      <li>Key ON/RUN, engine not required. A working cluster runs a lamp check and shows gear.</li>
+      <li>Try the dome light, the radio, and a door lock. Write down which of those still work.</li>
+      <li>One warning lamp that stays on, with the rest of the cluster alive, is a message. Use the owner guide for that symbol. It is not a dark-cluster repair.</li>
+      <li>Interior lights turn themselves off after about 10 minutes the first time, then about 90 seconds, with the key out or the ignition off. A dome light that timed out is not a dead cluster.</li>
+    </ol>
+    <h3>2. Panel illumination, when the cluster still displays</h3>
+    <ol>
+      <li>The headlamp switch is on the left side of the instrument panel. The owner guide uses the first detent for parking lights and instrument panel lights, and the second detent to add the headlights. Panel lights are not expected with that switch off.</li>
+      <li>The dimmer is next to that switch. With the parking lights or headlights on, rotating it upward increases instrument panel brightness. The extreme bottom holds the interior lights off, including when a door is open. The extreme top holds the interior lights on. After ignition off, that top position can sound the lights-on chime when the driver door opens.</li>
+      <li>The first dimmer detent is parade mode. It brightens the odometer, radio, and overhead displays while the parking lights or headlights are on. That is a bright display, not a failed cluster.</li>
+      <li>If the switch and the dimmer are set and the panel stays dark, ignition off, inspect cavity M20. This crosswalk lists it as 15 A, screenshot #53, instrument interior light, switch bank, and steering controls. M17 and M18 are the tail, park, license, and running lamps. Cavity J20 is the 30 A front wiper fuse. Neither is this step.</li>
+      <li>Solve an open M20 by installing one more 15 A fuse of the specified type. If it opens again, stop. The owner guide says the circuit has a problem. Note whether the steering-wheel controls on that same row died with the lamps. An open M20 does not prove the cluster module failed. If M20 looks intact and the lamps stay dark, the remaining work is the switch, the dimmer, and the lamp circuit with a service procedure. Leave the cluster in the dash.</li>
+    </ol>
+    <h3>3. A blank cluster</h3>
+    <ol>
+      <li>Read resting battery voltage, engine off. Below 12.4 V on this lesson: charge the battery and load-test it. Replace it if the test says it will not recover. Clean and tighten the posts you can see. A low source can blank or reset a cluster. Retest the cluster after the source is restored before you buy one.</li>
+      <li>If other cabin loads work and voltage is above 12.4 V, inspect both cluster rows with the ignition off. M13 is 20 A, screenshot #42, instrument cluster, clock, and multifunction controls. M15 is 20 A, screenshot #22, rear-view mirror, cluster, multifunction controls, and the tire-pressure monitor. They answer different questions. The cover label wins.</li>
+      <li>Replace only the row that is open, and only with another 20 A fuse, once. Do not borrow the fuse from the other cluster row. If the cluster returns and the fuse stays, the open fuse was what had interrupted that feed. You still do not know why it opened. If it opens again, stop.</li>
+      <li>If both look intact, a visual check does not prove the cluster has power or a return, and it does not prove the cluster failed. The next step is a supply, return, and communication test, including whether the cabin node answers a scan. This page cannot read the van. Do not install a cluster from this result.</li>
+    </ol>
+    <h3>4. Cluster, radio, and interior lights all dead</h3>
+    <ol>
+      <li>Start with the battery posts and the 12.4 V lesson threshold above. A shared failure follows the source.</li>
+      <li>The owner guide displays noFUSE in the odometer when it decides the ignition-off-draw fuse is improperly installed or damaged. A fully blank cluster may be unable to show that message, so look at the fuse anyway.</li>
+      <li>Cavity J13 is the 60 A IOD main, screenshot #7. It does not feed every circuit. M10, screenshot #37, 15 A, is a separate IOD feed for entertainment, DVD, hands-free, and vanity. Do not pull M10 to repair a blank cluster.</li>
+      <li>Ignition off. If J13 is loose, seat it and latch the TIPM cover. If it is open, replace it once with the same 60 A type. If it opens again, stop. If noFUSE returns with a correct fuse fully seated, stop and have that cavity checked. The message is about the IOD fuse.</li>
+      <li>If J13 is seated and intact, resting voltage is above 12.4 V, and the cabin is still broadly dead, have the battery load-tested and the charging system checked, then have module communication checked. Do not replace the TIPM or the cluster from the pattern alone.</li>
+    </ol>
+    <h3>5. Outside park or tail lamps, cluster still working</h3>
+    <ol>
+      <li>The first headlamp-switch detent should light the parking lamps and the instrument panel.</li>
+      <li>M17 is 15 A, screenshot #33, left tail, license, park, and running lamps. M18 is 15 A, screenshot #31, right tail, park, and running lamps. One dark side starts with that side’s fuse. Both sides means both fuses, then the switch.</li>
+      <li>Replace an open fuse once at 15 A. Two open fuses are a reason to stop after that single correct replacement, not a reason to bridge them. These rows are not M20.</li>
+    </ol>
+  </article>
+</main>
+<script>
+(function(){
+  var history=[];
+  var current='battery';
+  var walkId='crank';
+  var root=document.getElementById('step');
+  var bars=document.querySelectorAll('#progress span');
+  var heading=document.getElementById('walk-heading');
+  var sheet=document.getElementById('cluster-sheet');
+  var walks={
+    crank:{
+      title:'No-Crank Diagnostic Walkthrough',
+      start:'battery',
+      steps:{
+        battery:{
+          phase:1,
+          kicker:'Step 1 · Source',
+          title:'Check the battery voltage',
+          body:'Engine off. Read resting voltage at the battery. This walk branches at 12.4 V. That number is the lesson threshold. It is not a factory pass/fail limit, and a low reading does not by itself prove the battery failed.',
+          note:'Amber continues while supply still looks usable. Blue stops on the source.',
+          tone:'amber',
+          choices:[
+            {label:'Above 12.4V',tone:'amber',next:'fuse'},
+            {label:'Below 12.4V',tone:'blue',next:'low'}
+          ]
+        },
+        fuse:{
+          phase:2,
+          kicker:'Step 2 · Protection',
+          title:'Check the starter-solenoid fuse',
+          body:'Ignition off. Open the TIPM and use the cover label. On this crosswalk the starter-solenoid fuse is cavity J17, 40 A, screenshot index #2. Cavity J20 is the 30 A front wiper fuse, screenshot #5. It is a different circuit, so this step does not send you to J20.',
+          note:'An intact fuse does not prove the starter, the control circuit, or the cables. J18, 20 A, screenshot #1, is the PCM transmission-range feed. It is a different row from J17.',
+          tone:'amber',
+          choices:[
+            {label:'Fuse is Good',tone:'amber',next:'signal'},
+            {label:'Fuse is Blown',tone:'blue',next:'blown'}
+          ]
+        },
+        low:{
+          phase:2,
+          kicker:'Step 2 · Source',
+          title:'Charge or replace the battery',
+          body:'Charge the battery, then have it tested under load. Replace it if that test says it will not recover. Check the terminals you can see before you condemn the battery: a loose or corroded connection can produce the same no-crank.',
+          note:'Stop cranking while the terminals are loose. Do not replace the starter or the TIPM from a voltage number alone.',
+          tone:'blue',
+          terminal:true
+        },
+        blown:{
+          phase:3,
+          kicker:'Stop · Same rating, once',
+          title:'The starter-solenoid fuse is open',
+          body:'With the ignition off, replace cavity J17 only with another 40 A fuse of the specified type. One time. If that fuse opens again, stop. The owner guide says the circuit has a problem that must be corrected.',
+          note:'A blown J17 does not prove the starter or the TIPM failed. Do not install a higher rating, foil, or a bridge.',
+          tone:'blue',
+          terminal:true
+        },
+        signal:{
+          phase:3,
+          kicker:'Step 3 · Control',
+          title:'Voltage at the starter solenoid S-terminal',
+          body:'If you are set up for a control-circuit voltage check, have a helper turn the key to START and look for voltage at the starter solenoid S-terminal. That terminal is the control side. Do not bridge the solenoid, and do not probe the heavy battery cable from this page.',
+          note:'No voltage here is a control question. It is not proof the starter motor failed. Park, Neutral, and the brake or clutch interlock can keep the signal off.',
+          tone:'blue',
+          choices:[
+            {label:'Voltage is present while the key is turned',tone:'amber',next:'present'},
+            {label:'No voltage while the key is turned',tone:'blue',next:'absent'}
+          ]
+        },
+        present:{
+          phase:3,
+          kicker:'Step 3 · Result',
+          title:'The control signal arrived',
+          body:'Voltage at the S-terminal during the key cycle means the control side reached the solenoid in this observation. It does not prove the starter motor, the high-current cable, or the ground path. Stop this walk before any high-current test and follow a service procedure.',
+          tone:'amber',
+          terminal:true
+        },
+        absent:{
+          phase:3,
+          kicker:'Step 3 · Result',
+          title:'The control signal did not arrive',
+          body:'No voltage at the S-terminal during the key cycle leaves the control side open: shifter position, the interlock, and the control feed. J18 is the 20 A PCM transmission-range fuse, screenshot #1. It is not J17, and it is not J20. This result does not prove the starter failed.',
+          tone:'blue',
+          terminal:true
+        }
+      }
+    },
+    cluster:{
+      title:'No Dash Lights and Cluster Lights',
+      start:'pattern',
+      steps:{
+        pattern:{
+          phase:1,
+          kicker:'Step 1 · Sort the complaint',
+          title:'What is actually dark?',
+          body:'Key ON. A working cluster runs a lamp check and shows gear. Panel illumination, a blank cluster, a dead cabin, and outside park lamps are four different circuits on this van.',
+          note:'The full sequence is written under the wizard. Use the cover label if a cavity disagrees with this crosswalk.',
+          tone:'amber',
+          choices:[
+            {label:'Gauges still work. Only the panel lighting is dark or dim.',tone:'amber',next:'lamps'},
+            {label:'The cluster is blank. No lamp check, no gear, no gauges.',tone:'blue',next:'blank'},
+            {label:'Cluster, radio, and interior lights are all dead.',tone:'blue',next:'broad'},
+            {label:'Outside park or tail lamps are out. The cluster still works.',tone:'amber',next:'exterior'},
+            {label:'One warning lamp stays on. The rest of the cluster works.',tone:'blue',next:'one-lamp'}
+          ]
+        },
+        lamps:{
+          phase:2,
+          kicker:'Step 2 · Headlamp switch',
+          title:'Put the panel lights in a position that should light them',
+          body:'The headlamp switch is on the left side of the instrument panel. The owner guide uses the first detent for parking lights and instrument panel lights, and the second detent to add the headlights. Panel illumination is not expected with that switch off.',
+          note:'If the gauges already work, this is not a cluster-module replacement.',
+          tone:'amber',
+          choices:[
+            {label:'The switch was off',tone:'amber',next:'lamps-solved'},
+            {label:'Park or headlights are on and the panel is still dark',tone:'blue',next:'dimmer'}
+          ]
+        },
+        'lamps-solved':{
+          phase:2,
+          kicker:'Solved · Switch position',
+          title:'Turn the headlamp switch to a panel-light detent',
+          body:'Use the first detent for parking lights and instrument panel lights, or the second detent to add the headlights. If the panel lights return, the complaint was switch position. No fuse and no cluster.',
+          tone:'amber',
+          terminal:true
+        },
+        dimmer:{
+          phase:3,
+          kicker:'Step 3 · Dimmer',
+          title:'Move the dimmer through its range',
+          body:'The dimmer is next to the headlamp switch. With the parking lights or headlights on, upward rotation increases instrument panel brightness. Extreme bottom holds the interior lights off, even with a door open. Extreme top holds them on and can chime when the driver door opens after ignition off. The first detent is parade mode: it brightens the odometer, radio, and overhead displays with the exterior lamps on.',
+          note:'Parade mode is a bright display. It is not a failed cluster. A dome light that went out after about 10 minutes, key off, has timed out.',
+          tone:'amber',
+          choices:[
+            {label:'Moving the dimmer brought the panel lights back',tone:'amber',next:'dimmer-solved'},
+            {label:'The dimmer moved through its range and the panel stayed dark',tone:'blue',next:'m20'}
+          ]
+        },
+        'dimmer-solved':{
+          phase:3,
+          kicker:'Solved · Dimmer',
+          title:'Leave the dimmer off the extreme bottom',
+          body:'The panel lights followed the dimmer, so the repair is the control position. Keep it out of the extreme bottom if you want interior lights with a door open. Keep it out of the extreme top after you shut the van off if you do not want the lights-on chime and a drain from interior lamps.',
+          tone:'amber',
+          terminal:true
+        },
+        m20:{
+          phase:4,
+          kicker:'Step 4 · M20',
+          title:'Inspect the instrument-interior-light fuse',
+          body:'Ignition off. Cavity M20 is 15 A, screenshot #53, instrument interior light, switch bank, and steering controls. M17 and M18 are the exterior tail, park, license, and running lamps. Cavity J20 is the 30 A front wiper fuse. This step does not use those rows.',
+          note:'Write down whether the steering-wheel controls on this same row still work.',
+          tone:'blue',
+          choices:[
+            {label:'M20 is good',tone:'amber',next:'m20-good'},
+            {label:'M20 is open',tone:'blue',next:'m20-open'}
+          ]
+        },
+        'm20-good':{
+          phase:4,
+          kicker:'Stop · Fuse looks intact',
+          title:'Do not replace the cluster for dark panel lamps',
+          body:'The headlamp switch is in a panel-light position, the dimmer has been moved, and M20 looks intact. A good fuse does not prove the lamps have power. The remaining work is the switch, the dimmer, and the lamp circuit with a meter and a service procedure. If the steering controls on that row still work, tell the technician. The gauges already work, so the cluster module is the wrong part.',
+          tone:'blue',
+          terminal:true
+        },
+        'm20-open':{
+          phase:4,
+          kicker:'Solve · One correct fuse',
+          title:'Replace M20 once, at 15 A',
+          body:'Ignition off. Install one more 15 A fuse of the specified type in cavity M20, screenshot #53. If the panel lights return and the fuse stays, that open fuse had interrupted the feed. You still do not know why it opened. If it opens again, stop. The owner guide says the circuit has a problem. An open M20 does not prove the cluster failed. Do not install a higher rating or a bridge.',
+          tone:'amber',
+          terminal:true
+        },
+        blank:{
+          phase:2,
+          kicker:'Step 2 · Blank cluster',
+          title:'Separate the cluster from the rest of the cabin',
+          body:'A blank cluster with the key ON is loss of display, supply, or return. The dimmer changes brightness. It does not create a cluster that shows nothing. Compare the dome light, the radio, and a door lock.',
+          tone:'blue',
+          choices:[
+            {label:'Those other cabin loads still work',tone:'amber',next:'cluster-source'},
+            {label:'Those cabin loads are dead too',tone:'blue',next:'broad'}
+          ]
+        },
+        'cluster-source':{
+          phase:3,
+          kicker:'Step 3 · Source, then the two cluster fuses',
+          title:'Read resting battery voltage',
+          body:'Engine off. This lesson branches at 12.4 V. Other cabin loads working makes a dead battery less likely, and a marginal battery can still blank the cluster. Above 12.4 V, inspect M13 and M15 before anyone condemns the cluster.',
+          tone:'amber',
+          choices:[
+            {label:'Above 12.4V',tone:'amber',next:'cluster-fuses'},
+            {label:'Below 12.4V',tone:'blue',next:'low'}
+          ]
+        },
+        'cluster-fuses':{
+          phase:4,
+          kicker:'Step 4 · M13 and M15',
+          title:'Inspect both cluster rows',
+          body:'Ignition off. Use the cover label. M13 is 20 A, screenshot #42, instrument cluster, clock, and multifunction controls. M15 is 20 A, screenshot #22, rear-view mirror, cluster, multifunction controls, and the tire-pressure monitor. They are different rows. Do not move a fuse from one to the other.',
+          note:'The odometer message noFUSE is about the IOD fuse, cavity J13, not about M13 or M15.',
+          tone:'amber',
+          choices:[
+            {label:'Both M13 and M15 look intact',tone:'blue',next:'fuses-good'},
+            {label:'M13 is open',tone:'amber',next:'m13-open'},
+            {label:'M15 is open',tone:'amber',next:'m15-open'}
+          ]
+        },
+        'fuses-good':{
+          phase:4,
+          kicker:'Stop · Both cluster fuses look intact',
+          title:'Leave the cluster installed',
+          body:'M13 and M15 both look intact, and the other cabin loads work. A visual fuse check does not prove the cluster has power or a return, and it does not prove the cluster failed. Have supply, return, and communication tested, including whether the cabin node answers a scan. This page cannot read the van.',
+          tone:'blue',
+          terminal:true
+        },
+        'm13-open':{
+          phase:4,
+          kicker:'Solve · M13 once',
+          title:'Replace only cavity M13, at 20 A',
+          body:'Ignition off. Install one more 20 A fuse of the specified type in M13, screenshot #42. If the cluster returns and the fuse stays, that feed had been open. You still do not know why it opened. If it opens again, stop. Do not replace it with the M15 fuse, and do not install a higher rating.',
+          tone:'amber',
+          terminal:true
+        },
+        'm15-open':{
+          phase:4,
+          kicker:'Solve · M15 once',
+          title:'Replace only cavity M15, at 20 A',
+          body:'Ignition off. Install one more 20 A fuse of the specified type in M15, screenshot #22. That row also lists the rear-view mirror, multifunction controls, and the tire-pressure monitor, so write down which of those died with the cluster. If the fuse opens again, stop. An open M15 does not prove the cluster module failed.',
+          tone:'amber',
+          terminal:true
+        },
+        broad:{
+          phase:2,
+          kicker:'Step 2 · Shared supply',
+          title:'A dark cabin starts at the battery',
+          body:'Cluster, radio, and interior lights dead together follow the source before any module. Engine off. Read resting voltage. Interior lamps also turn off after about 10 minutes the first time, then about 90 seconds, with the key out or the ignition off. Confirm you are not looking at that timeout or at the dimmer held at the extreme bottom.',
+          tone:'blue',
+          choices:[
+            {label:'Above 12.4V, and it is not the dimmer or the timeout',tone:'amber',next:'iod'},
+            {label:'Below 12.4V',tone:'blue',next:'low'}
+          ]
+        },
+        iod:{
+          phase:3,
+          kicker:'Step 3 · J13 IOD main',
+          title:'Inspect the ignition-off-draw fuse',
+          body:'The owner guide shows noFUSE in the odometer when it decides the IOD fuse is improperly installed or damaged. A blank cluster may be unable to show that message. Cavity J13 is the 60 A IOD main, screenshot #7. It does not feed every circuit. M10, screenshot #37, 15 A, is a separate IOD feed for entertainment, DVD, hands-free, and vanity. Do not pull M10 for a blank cluster.',
+          note:'Ignition off. Latch the TIPM cover when you finish. The cover label wins.',
+          tone:'blue',
+          choices:[
+            {label:'J13 is loose or open',tone:'amber',next:'iod-open'},
+            {label:'J13 is seated and intact',tone:'blue',next:'iod-good'},
+            {label:'The odometer shows noFUSE',tone:'amber',next:'iod-open'}
+          ]
+        },
+        'iod-open':{
+          phase:4,
+          kicker:'Solve · J13 once',
+          title:'Reseat J13, or replace it once at 60 A',
+          body:'Ignition off. If cavity J13 is unseated, seat a correct 60 A fuse and latch the cover. If it is open, install one more 60 A fuse of the specified type. Cycle the key. If noFUSE clears and the cabin loads return, the IOD fuse installation or that open fuse was the interruption. If the new fuse opens again, or noFUSE returns with a correct fuse fully seated, stop and have that cavity checked. This is not a reason to replace the cluster.',
+          tone:'amber',
+          terminal:true
+        },
+        'iod-good':{
+          phase:4,
+          kicker:'Stop · Shared failure remains',
+          title:'Load-test the battery, then check communication',
+          body:'J13 looks seated and intact, resting voltage is above 12.4 V, and the cluster, radio, and interior lights are still dead. Have the battery tested under load and the charging system checked. Then have module communication checked. Do not replace the TIPM or the cluster from the pattern alone.',
+          tone:'blue',
+          terminal:true
+        },
+        low:{
+          phase:3,
+          kicker:'Solve · Source',
+          title:'Charge the battery, then test it',
+          body:'Charge the battery and have it load-tested. Replace it if that test says it will not recover. Clean and tighten the posts you can see. A cluster that blanks or resets on a low source often returns when the source is restored. Retest the cluster after the charge before you buy a cluster or a TIPM. A voltage under 12.4 V does not by itself prove the battery failed. A loose or corroded connection can look the same.',
+          tone:'blue',
+          terminal:true
+        },
+        exterior:{
+          phase:2,
+          kicker:'Step 2 · Park and tail lamps',
+          title:'These are not the cluster fuses',
+          body:'The first headlamp-switch detent should light the parking lamps and the instrument panel. M17 is 15 A, screenshot #33, left tail, license, park, and running lamps. M18 is 15 A, screenshot #31, right tail, park, and running lamps. M20 is the instrument interior light. J20 is the front wiper fuse.',
+          tone:'amber',
+          choices:[
+            {label:'Only one side is dark',tone:'amber',next:'one-side'},
+            {label:'Both sides are dark',tone:'blue',next:'both-sides'}
+          ]
+        },
+        'one-side':{
+          phase:3,
+          kicker:'Solve · One side',
+          title:'Replace that side’s 15 A fuse once',
+          body:'Ignition off. Left side is cavity M17, screenshot #33. Right side is cavity M18, screenshot #31. Install one more 15 A fuse of the specified type in the dark side only. If it opens again, stop. The other side’s fuse stays put. This does not repair a dark instrument cluster.',
+          tone:'amber',
+          terminal:true
+        },
+        'both-sides':{
+          phase:3,
+          kicker:'Stop · Both sides',
+          title:'Check both lamp fuses, then the switch',
+          body:'Inspect M17 and M18. Replace each open fuse once at 15 A. Two open fuses are a reason to stop after that single correct replacement, not a reason to bridge them. If both fuses look intact, the shared control is the headlamp switch, first detent for park and panel lights. Have that circuit checked. These rows are not the cluster.',
+          tone:'blue',
+          terminal:true
+        },
+        'one-lamp':{
+          phase:2,
+          kicker:'Different complaint',
+          title:'A lit warning lamp is a message',
+          body:'The cluster has power if the other lamps and the gear display work. Read the symbol in the 2012 owner guide and follow that stop or drive instruction. A flashing malfunction indicator while the engine runs needs service now. Do not shotgun M13, M15, or M20 for one lamp.',
+          tone:'blue',
+          terminal:true
+        }
+      }
+    }
+  };
+
+  function paintProgress(step){
+    bars.forEach(function(bar,i){
+      bar.className='';
+      if(i<step.phase) bar.className=step.tone==='blue'?'on control':'on';
+    });
+  }
+
+  function show(id){
+    var walk=walks[walkId];
+    var step=walk.steps[id];
+    if(!step) return;
+    current=id;
+    paintProgress(step);
+    root.innerHTML='';
+    var kicker=document.createElement('p');
+    kicker.className='kicker';
+    kicker.textContent=step.kicker;
+    var title=document.createElement('h2');
+    title.textContent=step.title;
+    var body=document.createElement('p');
+    body.textContent=step.body;
+    root.appendChild(kicker);
+    root.appendChild(title);
+    root.appendChild(body);
+    if(step.note){
+      var note=document.createElement('p');
+      note.className='note'+(step.tone==='blue'?' blue':'');
+      note.textContent=step.note;
+      root.appendChild(note);
+    }
+    if(step.terminal){
+      var stop=document.createElement('p');
+      stop.className='stop';
+      stop.textContent='End of this branch. Start over to take another path.';
+      root.appendChild(stop);
+    }
+    if(step.choices){
+      var box=document.createElement('div');
+      box.className='choices';
+      box.setAttribute('role','group');
+      box.setAttribute('aria-label','Choose the observation');
+      step.choices.forEach(function(choice){
+        var button=document.createElement('button');
+        button.type='button';
+        button.className=choice.tone;
+        button.textContent=choice.label;
+        button.addEventListener('click',function(){
+          history.push(id);
+          show(choice.next);
+        });
+        box.appendChild(button);
+      });
+      root.appendChild(box);
+    }
+    var nav=document.createElement('div');
+    nav.className='nav';
+    var back=document.createElement('button');
+    back.type='button';
+    back.textContent='Back';
+    back.disabled=history.length===0;
+    back.addEventListener('click',function(){
+      var previous=history.pop();
+      if(previous) show(previous);
+    });
+    var restart=document.createElement('button');
+    restart.type='button';
+    restart.textContent='Start over';
+    restart.addEventListener('click',function(){
+      history=[];
+      show(walk.start);
+    });
+    nav.appendChild(back);
+    nav.appendChild(restart);
+    root.appendChild(nav);
+  }
+
+  function startWalk(id){
+    if(!walks[id]) id='crank';
+    walkId=id;
+    history=[];
+    heading.textContent=walks[id].title;
+    document.title=walks[id].title+' · 2012 Grand Caravan';
+    document.getElementById('pick-crank').setAttribute('aria-pressed', id==='crank' ? 'true' : 'false');
+    document.getElementById('pick-cluster').setAttribute('aria-pressed', id==='cluster' ? 'true' : 'false');
+    sheet.hidden=id!=='cluster';
+    if(id==='cluster' && location.hash!=='#cluster') history.replaceState(null,'','#cluster');
+    if(id==='crank' && location.hash==='#cluster') history.replaceState(null,'','#no-crank');
+    show(walks[id].start);
+  }
+
+  document.getElementById('pick-crank').addEventListener('click',function(){startWalk('crank');});
+  document.getElementById('pick-cluster').addEventListener('click',function(){startWalk('cluster');});
+  window.addEventListener('hashchange',function(){
+    startWalk(location.hash==='#cluster' ? 'cluster' : 'crank');
+  });
+  startWalk(location.hash==='#cluster' ? 'cluster' : 'crank');
+})();
+</script>
+</body>
+</html>
