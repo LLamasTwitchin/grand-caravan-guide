@@ -74,6 +74,23 @@
 .lab-name{display:grid;gap:4px;font-size:12px;margin:8px 0}
 .lab-name input, #version-app textarea{width:100%;max-width:520px;padding:8px;border:1px solid #c9c4ba;background:#fffdfa;color:#182124}
 .diagram-role{font-size:12px;color:#3d4c52;border-left:3px solid #4b78ac;padding-left:8px}
+html{scroll-padding-top:64px}
+.shell{padding-top:84px}
+.tabbar{position:fixed;top:0;left:0;right:0;z-index:80;background:#151a1d;border-bottom:1px solid #ffffff25;padding:0 max(0px,calc((100vw - 1440px) / 2))}
+.tabbar .tabs{border-bottom:0;max-width:1440px;margin:0 auto;padding:0 clamp(14px,3vw,42px)}
+.guide-panel{top:76px}
+html.contrast .tabbar{background:#000;border-bottom-color:#fff}
+@media(max-width:600px){
+  html{scroll-padding-top:58px}
+  .shell{padding-top:70px}
+  .tabbar .tabs{padding:0 12px}
+  .guide-panel{top:68px}
+}
+@media print{
+  html{scroll-padding-top:0}
+  .shell{padding-top:0}
+  .tabbar{display:none!important;position:static}
+}
 .walk-page-links{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
 .walk-page-link{display:inline-block;margin:0;padding:10px 12px;background:#1f2a2d;color:#fff;text-decoration:none;font:800 12px ui-monospace,Consolas,monospace;letter-spacing:.03em}
 .walk-page-link:hover{background:#cb562a;color:#fff}

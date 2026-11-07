@@ -28,10 +28,16 @@ if(!lab.includes('not a professional certificate'))fail('quiz must say it is not
 if(!lab.includes('not connector pin numbers'))fail('component roles must reject pin numbers');
 if(/\bpin\s*\d+/i.test(lab))fail('component library invented a pin number');
 if(!comms.includes('10051775')||!comms.includes('not a fuse'))fail('manufacturer communication record is missing its limit');
-if(!sw.includes('gc-guide-v23'))fail('service worker cache name changed unexpectedly');
+if(!sw.includes('gc-guide-v24'))fail('service worker cache name changed unexpectedly');
+if(!sw.includes('./quiz.html'))fail('quiz page is not in the offline cache');
+if(!html.includes('href="./quiz.html"'))fail('quiz is not linked from index.html');
+const vin=/\b[A-HJ-NPR-Z0-9]{17}\b/;
+const quiz=fs.readFileSync(path.join(root,'quiz.html'),'utf8');
+if(!quiz.includes('out of ')||!quiz.includes('not a professional certificate'))fail('quiz results line is missing');
+if((quiz.match(/answer:/g)||[]).length!==5)fail('quiz must contain 5 questions');
+if(vin.test(quiz))fail('possible VIN-like token in quiz');
 if(!sw.includes('./diagnostic-walkthrough.html'))fail('walkthrough page is not in the offline cache');
 if(!html.includes('href="./diagnostic-walkthrough.html"'))fail('no-crank wizard is not linked from index.html');
-const vin=/\b[A-HJ-NPR-Z0-9]{17}\b/;
 const walk=fs.readFileSync(path.join(root,'diagnostic-walkthrough.html'),'utf8');
 if(!walk.includes('No-Crank Diagnostic Walkthrough'))fail('walkthrough title is missing');
 if(!walk.includes('Above 12.4V')||!walk.includes('Below 12.4V'))fail('battery voltage branch is missing');
