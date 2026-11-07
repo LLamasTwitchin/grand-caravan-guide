@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#151a1d">
+<title>Electrical Quiz · 2012 Grand Caravan</title>
+<style>
+  :root{--ink:#151a1d;--panel:#f3f0e9;--line:#c9c4b9;--white:#f9f8f3;--orange:#ff8a3d;--orange2:#cb562a;--blue:#4b78ac;--green:#427e65;--red:#a83e35;--shadow:0 18px 50px #070b0d55}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(ellipse at 88% 0%,#263134 0,transparent 42%),var(--ink);color:var(--white);font:16px/1.5 "Segoe UI",system-ui,sans-serif}
+  a{color:#ffb06c}
+  button{font:inherit;cursor:pointer}
+  :focus-visible{outline:3px solid #ffb76b;outline-offset:3px}
+  .shell{max-width:720px;margin:auto;padding:28px 16px 56px}
+  .topline{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid #ffffff21;padding-bottom:16px;color:#aeb8b8;font:700 11px/1.2 ui-monospace,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase}
+  .topline a{color:#c3cfcc;text-decoration:none}
+  .brand{display:flex;gap:9px;align-items:center}
+  .brand-mark{width:27px;height:27px;display:grid;place-items:center;background:var(--orange);color:#161b1d;clip-path:polygon(0 0,100% 0,100% 74%,74% 100%,0 100%);font-weight:900}
+  h1{font-size:clamp(28px,6vw,42px);line-height:1;letter-spacing:-.045em;margin:22px 0 8px}
+  .lead{color:#bbc4c2;margin:0 0 16px}
+  .meta{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin:0 0 8px;color:#c5d0cd;font:800 12px ui-monospace,Consolas,monospace;letter-spacing:.04em}
+  .bar{height:6px;background:#ffffff22;margin:0 0 14px}
+  .bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--orange),var(--blue));transition:width .2s}
+  .card{background:var(--panel);color:var(--ink);box-shadow:var(--shadow);padding:22px}
+  .card h2{font-size:clamp(20px,4vw,26px);letter-spacing:-.03em;line-height:1.2;margin:0 0 16px}
+  .options{display:grid;gap:8px}
+  .options button{text-align:left;border:1px solid #c9c4ba;background:#fffdfa;color:#182124;padding:12px 14px;font-weight:650;border-radius:2px}
+  .options button:hover:not(:disabled){border-color:#e0a06a;background:#fff5eb}
+  .options button.correct{background:#e5f3ec;border-color:var(--green);box-shadow:inset 4px 0 0 var(--green)}
+  .options button.incorrect{background:#f8ecea;border-color:var(--red);box-shadow:inset 4px 0 0 var(--red)}
+  .options button:disabled{cursor:default}
+  .why{margin:14px 0 0;padding:10px 12px;border-left:3px solid var(--blue);background:#e7eef6;color:#1e3348;font-size:14px}
+  .next{margin-top:16px;border:0;background:#1f2a2d;color:#fff;padding:12px 16px;font:800 13px ui-monospace,Consolas,monospace;letter-spacing:.04em;text-transform:uppercase}
+  .next:hover{background:var(--orange2)}
+  .score{font-size:clamp(28px,6vw,40px);letter-spacing:-.04em;margin:0 0 8px}
+  .fine{color:#5c6768;font-size:13px;margin:0 0 16px}
+  @media(max-width:600px){.shell{padding:16px 12px 40px}.card{padding:16px}.options button,.next{width:100%}}
+  @media(prefers-reduced-motion:reduce){.bar span{transition:none}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <header class="topline"><div class="brand"><span class="brand-mark">GC</span><span>Field reference</span></div><a href="./index.html">Back to the lab</a></header>
+  <h1>Electrical quiz</h1>
+  <p class="lead">Five questions from the 2012 Grand Caravan crosswalk and the owner guide. The score is practice on this page. It is not a professional certificate.</p>
+  <p class="meta"><span id="progress-label">Question 1 of 5</span><span id="tally">0 correct</span></p>
+  <div class="bar" aria-hidden="true"><span id="progress-bar"></span></div>
+  <section class="card" id="card" aria-live="polite"></section>
+</main>
+<script>
+(function(){
+  var questions=[
+    {
+      q:'Which fuse controls the front wiper low and high speeds?',
+      options:[
+        'Cavity J21, 20 A, front and rear washer',
+        'Cavity J20, 30 A, screenshot #5',
+        'Cavity M24, 25 A, rear wiper',
+        'Cavity J17, 40 A, starter solenoid'
+      ],
+      answer:1,
+      why:'J20 is the 30 A front wiper low/high fuse. J21 is the washer. M24 is the rear wiper. J17 is the starter solenoid.'
+    },
+    {
+      q:'What does a blown J13 fuse indicate?',
+      options:[
+        'The starter solenoid circuit opened',
+        'Screenshot #12, the rear defogger, opened',
+        'The 60 A ignition-off-draw main feed is open. It does not prove the cluster or the TIPM failed',
+        'The front blower fuse opened'
+      ],
+      answer:2,
+      why:'J13 is the 60 A IOD main, screenshot #7. An open fuse means that protective device opened. Replace it once with the same rating. If it opens again, the circuit has a problem.'
+    },
+    {
+      q:'What is screenshot index #12?',
+      options:[
+        '40 A rear window defogger, cavity J14',
+        '30 A rear HVAC blower, cavity J12',
+        '40 A starter solenoid, cavity J17',
+        '60 A radiator fan, cavity J19'
+      ],
+      answer:0,
+      why:'The digits match and the fuses do not. Screenshot #12 is the defogger at J14. Cavity J12 is a different 30 A row with no screenshot index.'
+    },
+    {
+      q:'The gauges still work, and only the instrument panel lights are dark. Which fuse is the first one for that complaint?',
+      options:[
+        'M13, 20 A, instrument cluster',
+        'M17, 15 A, left tail and park lamps',
+        'J20, 30 A, front wipers',
+        'M20, 15 A, screenshot #53, instrument interior light'
+      ],
+      answer:3,
+      why:'M20 feeds the instrument interior light, switch bank, and steering controls. M13 is a cluster-module feed. M17 is an exterior lamp. Check the headlamp switch and dimmer before the fuse.'
+    },
+    {
+      q:'The odometer shows noFUSE. What does the owner guide say that message means?',
+      options:[
+        'The cluster module has failed and should be replaced',
+        'The ignition-off-draw fuse is improperly installed or damaged',
+        'Cavity J12 and screenshot #12 are the same fuse',
+        'Install a higher-rated fuse in J17'
+      ],
+      answer:1,
+      why:'noFUSE points at the IOD fuse, cavity J13 on this crosswalk. Seat or replace that fuse once at 60 A. The message is not a failed cluster, and J12 is not screenshot #12.'
+    }
+  ];
+  var index=0;
+  var correct=0;
+  var locked=false;
+  var card=document.getElementById('card');
+  var label=document.getElementById('progress-label');
+  var tally=document.getElementById('tally');
+  var bar=document.getElementById('progress-bar');
+
+  function paintProgress(){
+    var shown=Math.min(index+1, questions.length);
+    label.textContent=index>=questions.length?'Results':'Question '+shown+' of '+questions.length;
+    tally.textContent=correct+' correct';
+    bar.style.width=(index/questions.length*100)+'%';
+  }
+
+  function choose(button, choice, answer){
+    if(locked) return;
+    locked=true;
+    var buttons=card.querySelectorAll('.options button');
+    buttons.forEach(function(item){item.disabled=true;});
+    if(choice===answer){
+      button.classList.add('correct');
+      correct+=1;
+    }else{
+      button.classList.add('incorrect');
+      buttons[answer].classList.add('correct');
+    }
+    tally.textContent=correct+' correct';
+    var why=document.createElement('p');
+    why.className='why';
+    why.textContent=questions[index].why;
+    card.appendChild(why);
+    var next=document.createElement('button');
+    next.type='button';
+    next.className='next';
+    next.textContent=index===questions.length-1?'See results':'Next question';
+    next.addEventListener('click',function(){
+      index+=1;
+      if(index>=questions.length) showResults();
+      else showQuestion();
+    });
+    card.appendChild(next);
+    next.focus();
+  }
+
+  function showQuestion(){
+    locked=false;
+    paintProgress();
+    var item=questions[index];
+    card.innerHTML='';
+    var title=document.createElement('h2');
+    title.textContent=item.q;
+    var box=document.createElement('div');
+    box.className='options';
+    box.setAttribute('role','group');
+    box.setAttribute('aria-label','Answers');
+    item.options.forEach(function(text, choice){
+      var button=document.createElement('button');
+      button.type='button';
+      button.textContent=text;
+      button.addEventListener('click',function(){choose(button, choice, item.answer);});
+      box.appendChild(button);
+    });
+    card.appendChild(title);
+    card.appendChild(box);
+  }
+
+  function showResults(){
+    paintProgress();
+    bar.style.width='100%';
+    label.textContent='Results';
+    card.innerHTML='';
+    var score=document.createElement('p');
+    score.className='score';
+    score.textContent='You got '+correct+' out of '+questions.length+' correct';
+    var fine=document.createElement('p');
+    fine.className='fine';
+    fine.textContent='Practice score on this page. It is not a professional certificate, license, or repair credential. The TIPM cover label wins if it disagrees with a question.';
+    var again=document.createElement('button');
+    again.type='button';
+    again.className='next';
+    again.textContent='Retake the quiz';
+    again.addEventListener('click',function(){
+      index=0;
+      correct=0;
+      showQuestion();
+    });
+    card.appendChild(score);
+    card.appendChild(fine);
+    card.appendChild(again);
+    again.focus();
+  }
+
+  showQuestion();
+})();
+</script>
+</body>
+</html>
