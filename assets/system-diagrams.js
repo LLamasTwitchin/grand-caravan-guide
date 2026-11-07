@@ -141,6 +141,33 @@
     document.querySelector('#fuses')?.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
+  function connectionRole(node){
+    const roles={
+      battery:'Source. This is the energy supply in the lesson, not a control circuit.',
+      tipm:'Distribution. The cover label names the protected circuit.',
+      j13:'High-current protected supply. Not a signal wire.',
+      load:'Load. This is where the lesson says the current does the work.',
+      return:'Return path, training only. This drawing does not locate a ground stud.',
+      j17:'High-current protected supply to the starter solenoid. Not the control signal.',
+      starter:'Load. High current while cranking on a real van. Not a test-point diagram.',
+      j18:'Module feed. Lower current than J17 in the owner-guide table. Not drawn in series with the solenoid fuse.',
+      alt:'Charging path back toward the battery. No alternator fuse is assigned on this page.',
+      j12:'High-current protected supply. Rear blower and radiator-fan motor share this listed cavity. Not screenshot #12.',
+      j19:'Separate high-current radiator-fan cartridge. Not J12 and not screenshot #12.',
+      num12:'Not the cooling or blower path. Screenshot #12 is the defogger supply at cavity J14 in this crosswalk.',
+      j15:'High-current blower supply.',
+      m11:'Control feed. The table lists 10 A, much smaller than the blower cartridge.',
+      m17:'Lamp supply for the listed left-side lamps. A dark lamp can still be the bulb, socket, or return.',
+      m18:'Lamp supply for the listed right-side lamps.',
+      m1:'Brake-lamp supply. Not a tail-lamp fuse.',
+      m22:'Protected horn leg. The table does not say whether this leg is the horn or a control.',
+      m23:'The other protected horn leg. Two fuses do not say which one opened.',
+      m2:'If equipped. Fog, trailer lighting, and the battery sensor. Not the headlamp bulbs.',
+      j10:'If equipped. Headlamp wash and manifold tuning valve. Not a headlamp-bulb fuse.'
+    };
+    return node.role||roles[node.id]||'Training connection. Read the note before treating it as power or control.';
+  }
+
   function showDetail(node){
     selectedNode=node.id;
     detail.replaceChildren();
@@ -151,7 +178,10 @@
     title.textContent=node.title;
     const text=document.createElement('p');
     text.textContent=node.text;
-    detail.append(badge,title,text);
+    const role=document.createElement('p');
+    role.className='diagram-role';
+    role.textContent=connectionRole(node);
+    detail.append(badge,title,text,role);
     if(node.fuse){
       const button=document.createElement('button');
       button.type='button';
@@ -175,6 +205,7 @@
     const small=document.createElement('small');
     small.textContent=node.sub;
     button.append(strong,small);
+    button.title=connectionRole(node);
     button.addEventListener('click',()=>showDetail(node));
     return button;
   }
@@ -251,4 +282,12 @@
   tabs.setAttribute('role','tablist');
   tabs.setAttribute('aria-label','System diagrams');
   renderDiagram(0);
+  document.addEventListener('vehicle-fuse-selected',event=>{
+    const ref=event.detail;
+    if(!ref)return;
+    const diagram=pack.diagrams[diagramIndex];
+    const nodes=diagram.chain.concat(...(diagram.branches||[]).map(branch=>branch.nodes));
+    const hit=nodes.find(node=>node.fuse&&(ref.manualOnly?node.fuse.manualOnly&&node.fuse.cavity===ref.cavity:node.fuse.n===ref.n));
+    if(hit)showDetail(hit);
+  });
 })();

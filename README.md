@@ -9,6 +9,9 @@ A self-contained troubleshooting and electrical learning guide with a real-time 
 - Read expanded symptom guides, including a sourced limp-home guide that separates owner-guide facts from possibilities, plus circuit lessons, owner safety notes, and print/save the guide as PDF.
 - Open functional diagrams for power distribution, starting and charging, cooling, HVAC, and lighting. Each diagram says it is not an OEM wiring diagram.
 - Read the NHTSA recall snapshot for this model year. Campaigns are listed with their limits. They are not a ranking of common problems.
+- Walk a no-crank, rear-blower, or reopening-fuse sequence; take a practice quiz that stays on this browser; inject a simulated open fuse, open return, or high-resistance connection; and read component roles that are not connector pinouts.
+- Filter the fuse list by J/M cavity, amperage, and circuit group. Save favorites and walk bookmarks in this browser only.
+- Turn on the x-ray shell, high contrast, or a larger type size. Copy a link to a section. Install the page for an offline cache of the guide files.
 
 ## Accuracy and limits
 
